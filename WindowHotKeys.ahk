@@ -1,3 +1,4 @@
+#include Lib\Logging.ahk
 #include Lib\TrayIcon.ahk
 
 ;--------------------------------------------------------------------------------
@@ -10,16 +11,16 @@
 ;--------------------------------------------------------------------------------
 ; Shift+Escape - Minimize Active window
 +Esc::
-LogText("Executing Shift+Escape:")
-WinMinimize , A
-return
+    LogText("Executing Shift+Escape:")
+    WinMinimize , A
+    return
 
 ;--------------------------------------------------------------------------------
 ; Win+\ - Invoke Desktop Tray Launcher Menu
 #\::
-LogText("Executing Win+\: for DesktopTrayLauncher.exe")
-TrayIcon_Button("DesktopTrayLauncher.exe")
-return
+    LogText("Executing Win+\: for DesktopTrayLauncher.exe")
+    TrayIcon_Button("DesktopTrayLauncher.exe")
+    return
 
 ;--------------------------------------------------------------------------------
 ; Firefox
@@ -46,7 +47,7 @@ return
 ;--------------------------------------------------------------------------------
 ; Opera
 #If WinActive("ahk_exe opera.exe")
-    ; F12 = Ctrl-Shirt-C - Open Debug Inspector
+    ; F12 = Ctrl-Shift-C - Open Debug Inspector
     F12::
 		LogText("Executing F12: opera.exe")
 		Send ^+I

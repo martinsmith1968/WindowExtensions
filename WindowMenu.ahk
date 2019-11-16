@@ -361,49 +361,49 @@ ShowMenu(theWindow)
 ;--------------------------------------------------------------------------------
 ; WindowsKey+W
 #w::
-; Get Active Window
-WinGet, theWindow, ID, A
-MouseGetPos, mouseX, mouseY
+	; Get Active Window
+	WinGet, theWindow, ID, A
+	MouseGetPos, mouseX, mouseY
 
-G_ActiveWindow := New Window(theWindow)
-G_CurrentMouse := New Coordinate(mouseX, mouseY)
+	G_ActiveWindow := New Window(theWindow)
+	G_CurrentMouse := New Coordinate(mouseX, mouseY)
 
-ShowMenu(G_ActiveWindow)
-return
+	ShowMenu(G_ActiveWindow)
+	return
 
 ;--------------------------------------------------------------------------------
 ; RightMouseButton
-$~Rbutton::
-; Get MousePos and Active Window
-MouseGetPos, mouseX, mouseY, theWindow
+	$~Rbutton::
+	; Get MousePos and Active Window
+	MouseGetPos, mouseX, mouseY, theWindow
 
-G_ActiveWindow := New Window(theWindow)
-G_CurrentMouse := New Coordinate(mouseX, mouseY)
+	G_ActiveWindow := New Window(theWindow)
+	G_CurrentMouse := New Coordinate(mouseX, mouseY)
 
-LogText("G_ActiveWindow: " . G_ActiveWindow.Description)
-LogText("G_CurrentMouse: " . G_CurrentMouse.Description)
+	LogText("G_ActiveWindow: " . G_ActiveWindow.Description)
+	LogText("G_CurrentMouse: " . G_CurrentMouse.Description)
 
-; Get Mouse Monitor
-currentMouseMonitor := New Monitor(G_CurrentMouse.MonitorIndex)
-LogText("currentMouseMonitor: " . currentMouseMonitor.Description)
-LogText("currentMouseMonitor.WorkArea: " . currentMouseMonitor.WorkArea.Description)
+	; Get Mouse Monitor
+	currentMouseMonitor := New Monitor(G_CurrentMouse.MonitorIndex)
+	LogText("currentMouseMonitor: " . currentMouseMonitor.Description)
+	LogText("currentMouseMonitor.WorkArea: " . currentMouseMonitor.WorkArea.Description)
 
-if (!G_CurrentMouse.IsInRectangle(currentMouseMonitor.WorkArea))
-{
-    LogText("Outside Monitor Area: " . currentMouseMonitor.WorkArea.Description)
-    return
-}
+	if (!G_CurrentMouse.IsInRectangle(currentMouseMonitor.WorkArea))
+	{
+		LogText("Outside Monitor Area: " . currentMouseMonitor.WorkArea.Description)
+		return
+	}
 
-hitArea := G_ActiveWindow.GetHitArea(G_CaptionHeight)
-if (!G_currentMouse.IsInRectangle(hitArea))
-{
-    LogText("Outside Window Hit Area: " . hitArea.Description)
-    return
-}
+	hitArea := G_ActiveWindow.GetHitArea(G_CaptionHeight)
+	if (!G_currentMouse.IsInRectangle(hitArea))
+	{
+		LogText("Outside Window Hit Area: " . hitArea.Description)
+		return
+	}
 
-title := G_ActiveWindow.Title
-description := G_ActiveWindow.Description
+	title := G_ActiveWindow.Title
+	description := G_ActiveWindow.Description
 
-ShowMenu(G_ActiveWindow)
+	ShowMenu(G_ActiveWindow)
 
-return
+	return
