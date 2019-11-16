@@ -2,10 +2,10 @@
 
 SETLOCAL EnableDelayedExpansion
 
-SET APPNAME=WindowMenu
-SET APPDESCRIPTION=Window Management Menu
+SET APPNAME=WindowExtensions
+SET APPDESCRIPTION=Window Extensions Menu and HotKeys
 SET APPFILENAME=%APPNAME%.ahk
 SET EXEFILENAME=%APPNAME%.exe
-SET ICONFILENAME=windows.ico
+SET ICONFILENAME=Icons\windows.ico
 
 CALL BuildAHK.cmd "%~n0" "%APPNAME%" "%APPDESCRIPTION%" "%APPFILENAME%" "%EXEFILENAME%" "%ICONFILENAME%"

@@ -2,4 +2,4 @@
 
 SETLOCAL
 
-CALL CreateStartupShortcut.cmd "WindowMenu.exe"
+CALL CreateStartupShortcut.cmd "WindowExtensions.exe"
