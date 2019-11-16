@@ -1,4 +1,4 @@
-#Include WindowFunctions.ahk
+#Include Lib\WindowFunctions.ahk
 
 Class Coordinate
 {

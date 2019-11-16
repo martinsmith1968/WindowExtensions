@@ -8,11 +8,13 @@ SetFormat, float, 0.0
 SetBatchLines, 10ms 
 SetTitleMatchMode, 2
 
-#Include Logging.ahk
-#Include Classes.ahk
-#Include StringUtils.ahk
-#Include ArrayUtils.ahk
-#Include WindowFunctions.ahk
+;--------------------------------------------------------------------------------
+; Includes
+#Include Lib\Logging.ahk
+#Include Lib\WindowObjects.ahk
+#Include Lib\StringUtils.ahk
+#Include Lib\ArrayUtils.ahk
+#Include Lib\WindowFunctions.ahk
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -52,8 +54,6 @@ LogText("G_PrimaryMonitorIndex: " G_PrimaryMonitorIndex)
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
-G_RollupList := Object()
-
 G_ActiveWindow :=
 G_CurrentMouse :=
 
@@ -96,16 +96,11 @@ Menu, WindowMenu, Icon, %MenuTitle%, Shell32.dll, 20
 
 ; Standard Window Sizes
 Menu, WindowMenu, Add
-AddWindowMenuItem("&Fit Monitor", "FitMonitorSizeHandler", "MOVESIZE_COMMON_OPTIMUM")
 AddWindowMenuItem("&Optimum Size", "OptimumSizeHandler", "MOVESIZE_COMMON_OPTIMUM")
 AddWindowMenuItem("Su&b-Optimum Size", "SubOptimumSizeHandler", "MOVESIZE_COMMON_SUBOPTIMUM")
 AddWindowMenuItem("M&edium Size", "MediumSizeHandler", "MOVESIZE_COMMON_MEDIUM")
 AddWindowMenuItem("Sma&ll Size", "SmallSizeHandler", "MOVESIZE_COMMON_SMALL")
 AddWindowMenuItem("T&iny Size", "TinySizeHandler", "MOVESIZE_COMMON_TINY")
-
-; Rollup
-Menu, WindowMenu, Add
-AddWindowMenuItem("Roll&up", "RollupHandler", "SIZE_COMMON_ROLLUP")
 
 ; Move to known columns of the Screen
 Menu, WindowMenu, Add
@@ -114,12 +109,13 @@ AddWindowMenuItem("Ce&ntre Column", "MoveColumnCentreHandler", "MOVESIZE_COLUMN_
 AddWindowMenuItem("&Right Column", "MoveColumnRightHandler", "MOVESIZE_COLUMN_RIGHT")
 
 ; Multi-Monitor spanning
+Menu, WindowMenu, Add
+AddWindowMenuItem("&Fit Current Monitor", "SpanCurrentMonitorHandler", "MOVESIZE_SPAN_CURRENT")
 if (G_MonitorCount > 1)
 {
-    Menu, WindowMenu, Add
-    AddWindowMenuItem("S&pan Monitor Width", "SpanMonitorWidthHandler", "MOVESIZE_SPAN_WIDTH")
-    AddWindowMenuItem("S&pan Monitor Height", "SpanMonitorHeightHandler", "MOVESIZE_SPAN_HEIGHT")
-    AddWindowMenuItem("S&pan All Monitors", "SpanAllMonitors", "MOVESIZE_SPAN_ALL")
+    AddWindowMenuItem("Span &Monitor Width", "SpanMonitorWidthHandler", "MOVESIZE_SPAN_WIDTH")
+    AddWindowMenuItem("Span &Monitor Height", "SpanMonitorHeightHandler", "MOVESIZE_SPAN_HEIGHT")
+    AddWindowMenuItem("Span &All Monitors", "SpanAllMonitorsHandler", "MOVESIZE_SPAN_ALL")
 }
 
 ; Move to Corners
@@ -130,18 +126,22 @@ AddWindowMenuItem("Move &Top Right", "MoveTopRightHandler", "MOVE_CORNER_TOPRIGH
 AddWindowMenuItem("Move &Bottom Left", "MoveBottomLeftHandler", "MOVE_CORNER_BOTTOMLEFT")
 AddWindowMenuItem("Move &Bottom Right", "MoveBottomRightHandler", "MOVE_CORNER_BOTTOMRIGHT")
 
+; Rollup
+Menu, WindowMenu, Add
+AddWindowMenuItem("Roll&up", "RollupHandler", "SIZE_COMMON_ROLLUP")
+
 ; Topmost handling
 Menu, WindowMenu, Add
-AddWindowMenuItem("Set TopMost O&n", "TopHandlerSet", "POSITION_ZORDER_TOPMOSTON")
-AddWindowMenuItem("Set TopMost O&ff", "TopHandlerUnset", "POSITION_ZORDER_TOPMOSTOFF")
-AddWindowMenuItem("&Toggle TopMost", "TopHandlerToggle", "POSITION_ZORDER_TOPMOSTTOGGLE")
+AddWindowMenuItem("Set Top&Most On", "TopmostSetHandler", "POSITION_ZORDER_TOPMOSTON")
+AddWindowMenuItem("Set Top&Most Off", "TopmostUnsetHandler", "POSITION_ZORDER_TOPMOSTOFF")
+AddWindowMenuItem("&Toggle TopMost", "TopmostToggleHandler", "POSITION_ZORDER_TOPMOSTTOGGLE")
 
 ; Transparency
 Menu, WindowMenu, Add
-AddWindowMenuItem("Set Transparency &75%", "TransparencySet75", "POSITION_TRANSPARENCY75")
-AddWindowMenuItem("Set Transparency &50%", "TransparencySet50", "POSITION_TRANSPARENCY50")
-AddWindowMenuItem("Set Transparency &25%", "TransparencySet25", "POSITION_TRANSPARENCY25")
-AddWindowMenuItem("Set Transparency &0%", "TransparencySet0", "POSITION_TRANSPARENCY0")
+AddWindowMenuItem("Set Transparency &75%", "TransparencySet75Handler", "POSITION_TRANSPARENCY75")
+AddWindowMenuItem("Set Transparency &50%", "TransparencySet50Handler", "POSITION_TRANSPARENCY50")
+AddWindowMenuItem("Set Transparency &25%", "TransparencySet25Handler", "POSITION_TRANSPARENCY25")
+AddWindowMenuItem("Set Transparency &0%", "TransparencySet0Handler", "POSITION_TRANSPARENCY0")
 
 ; Send to back
 Menu, WindowMenu, Add
@@ -163,13 +163,10 @@ ExitApp  ; Must do this for the OnExit subroutine to actually Exit the script.
 
 
 ;--------------------------------------------------------------------------------
-; LABELS - Handlers
+; Menu Handlers
 ;--------------------------------------------------------------------------------
 
-FitMonitorSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 0))
-return
-
+;--------------------------------------------------------------------------------
 OptimumSizeHandler:
 SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 1))
 return
@@ -190,27 +187,43 @@ TinySizeHandler:
 SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 5))
 return
 
-;---------------------------------------
+;--------------------------------------------------------------------------------
+MoveColumnLeftHandler:
+SetWindowByColumn(G_ActiveWindow, 1, 3, G_ColumnGutterSize)
+return
+
+MoveColumnCentreHandler:
+SetWindowByColumn(G_ActiveWindow, 2, 3, G_ColumnGutterSize)
+return
+
+MoveColumnRightHandler:
+SetWindowByColumn(G_ActiveWindow, 3, 3, G_ColumnGutterSize)
+return
+
+;--------------------------------------------------------------------------------
+SpanCurrentMonitorHandler:
+monitor := new Monitor(G_ActiveWindow.MonitorIndex)
+monitorWorkArea := monitor.WorkArea
+SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, monitorWorkArea.Top, monitorWorkArea.Right, monitorWorkArea.Bottom, G_SpanMonitorGutterSize)
+return
+
 SpanMonitorWidthHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-
 SetWindowSpanMonitors(G_ActiveWindow, "", monitorWorkArea.Top, "", monitorWorkArea.Bottom, G_SpanMonitorGutterSize)
 return
 
-;---------------------------------------
 SpanMonitorHeightHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-
 SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, "", monitorWorkArea.Right, "", G_SpanMonitorGutterSize)
 return
 
-;---------------------------------------
-SpanAllMonitors:
+SpanAllMonitorsHandler:
 SetWindowSpanMonitors(G_ActiveWindow, "", "", "", "", G_SpanMonitorGutterSize)
 return
 
+;--------------------------------------------------------------------------------
 CentreHandler:
 SetWindowToCentre(G_ActiveWindow)
 return
@@ -231,55 +244,47 @@ MoveBottomRightHandler:
 SetWindowByGrid(G_ActiveWindow, 2, 2, 2, 2, G_GridGutterSize)
 return
 
-MoveColumnLeftHandler:
-SetWindowByColumn(G_ActiveWindow, 1, 3, G_ColumnGutterSize)
+;--------------------------------------------------------------------------------
+RollupHandler:
+RollupToggleWindow(G_ActiveWindow, G_CaptionHitHeight)
 return
 
-MoveColumnCentreHandler:
-SetWindowByColumn(G_ActiveWindow, 2, 3, G_ColumnGutterSize)
-return
-
-MoveColumnRightHandler:
-SetWindowByColumn(G_ActiveWindow, 3, 3, G_ColumnGutterSize)
-return
-
-TopHandlerSet:
+;--------------------------------------------------------------------------------
+TopmostSetHandler:
 SetWindowTop(G_ActiveWindow, 1)
 return
 
-TopHandlerUnset:
+TopmostUnsetHandler:
 SetWindowTop(G_ActiveWindow, 0)
 return
 
-TopHandlerToggle:
+TopmostToggleHandler:
 SetWindowTop(G_ActiveWindow, -1)
 return
 
-TransparencySet75:
+;--------------------------------------------------------------------------------
+TransparencySet75Handler:
 SetWindowTransparency(G_ActiveWindow, 64)
 return
 
-TransparencySet50:
+TransparencySet50Handler:
 SetWindowTransparency(G_ActiveWindow, 128)
 return
 
-TransparencySet25:
+TransparencySet25Handler:
 SetWindowTransparency(G_ActiveWindow, 192)
 return
 
-TransparencySet0:
+TransparencySet0Handler:
 SetWindowTransparency(G_ActiveWindow, 255)
 return
 
+;--------------------------------------------------------------------------------
 SendToBackHandler:
-windowHandle := G_ActiveWindow.WindowHandle
-WinSet, Bottom, , ahk_id %windowHandle%`
+SendWindowToBack(G_ActiveWindow)
 return
 
-RollupHandler:
-RollupToggleWindow(G_ActiveWindow)
-return
-
+;--------------------------------------------------------------------------------
 NullHandler:
 return
 
@@ -338,68 +343,32 @@ ShowMenu(theWindow)
 	; Enable / Disable as appropriate
 	if (IsWindowTopMost(theWindow.WindowHandle))
 	{
-		Menu, WindowMenu, Disable, Set TopMost O&n
-		Menu, WindowMenu, Enable, Set TopMost O&ff
+		Menu, WindowMenu, Disable, Set Top&Most On
+		Menu, WindowMenu, Enable, Set Top&Most Off
 	}
 	else
 	{
-		Menu, WindowMenu, Enable, Set TopMost O&n
-		Menu, WindowMenu, Disable, Set TopMost O&ff
+		Menu, WindowMenu, Enable, Set Top&Most On
+		Menu, WindowMenu, Disable, Set Top&Most Off
 	}
 	
 	; Show Popup Menu
 	Menu, WindowMenu, Show
 }
 
-;--------------------------------------------------------------------------------
-; RollupToggleWindow - Roll up a window to just its title bar
-RollupToggleWindow(theWindow)
-{
-	global G_RollupList
-	global G_CaptionHitHeight
-	
-	windowHandle := theWindow.WindowHandle
-	
-	for ruWindowId, ruHeight in G_RollupList
-	{
-		IfEqual, ruWindowId, %windowHandle%
-		{
-			WinMove, ahk_id %windowHandle%,,,,, %ruHeight%
-			G_RollupList.Delete(windowHandle)
-			return
-		}
-	}
-
-	WinGetPos,,,, wsHeight, ahk_id %windowHandle%
-	G_RollupList[windowHandle] := wsHeight
-
-	WinMove, ahk_id %windowHandle%,,,,, %G_CaptionHitHeight%
-}
-
-;--------------------------------------------------------------------------------
-; RollupWindow - Roll up a window to just its title bar
-RestoreRollupWindows()
-{
-	global G_RollupList
-	
-	Loop, Parse, G_RollupList, |
-	{
-		if A_LoopField =  ; First field in list is normally blank.
-			continue      ; So skip it.
-		StringTrimRight, ws_Height, ws_Window%A_LoopField%, 0
-		WinMove, ahk_id %A_LoopField%,,,,, %ws_Height%
-	}
-}
+#Include WindowHotKeys.ahk
 
 ;--------------------------------------------------------------------------------
 ; WindowsKey+W
 #w::
 ; Get Active Window
 WinGet, theWindow, ID, A
+MouseGetPos, mouseX, mouseY
 
-activeWindow := New Window(theWindow)
+G_ActiveWindow := New Window(theWindow)
+G_CurrentMouse := New Coordinate(mouseX, mouseY)
 
-ShowMenu(activeWindow)
+ShowMenu(G_ActiveWindow)
 return
 
 ;--------------------------------------------------------------------------------

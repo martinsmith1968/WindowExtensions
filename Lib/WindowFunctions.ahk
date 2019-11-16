@@ -1,3 +1,7 @@
+#Include Lib\Logging.ahk
+
+G_RollupList := Object()
+
 ;--------------------------------------------------------------------------------
 ; MoveAndSizeWindow - Set the Window position and size
 MoveAndSizeWindow(theWindow, winLeft, winTop, winWidth, winHeight)
@@ -8,7 +12,7 @@ MoveAndSizeWindow(theWindow, winLeft, winTop, winWidth, winHeight)
 
 	WinMove , ahk_id %windowHandle%, , winLeft, winTop, winWidth, winHeight
 	WinActivate, ahk_id %windowHandle%
-	WinShow, ahk_id %windowHandle%
+    WinShow, ahk_id %windowHandle%
 }
 
 ;--------------------------------------------------------------------------------
@@ -173,6 +177,53 @@ IsWindowTopMost(windowHandle)
 	}
 	
 	return false
+}
+
+;--------------------------------------------------------------------------------
+; RollupToggleWindow - Roll up a window to just its title bar
+RollupToggleWindow(theWindow, rollupHeight)
+{
+	global G_RollupList
+	
+	windowHandle := theWindow.WindowHandle
+	
+	for ruWindowId, ruHeight in G_RollupList
+	{
+		IfEqual, ruWindowId, %windowHandle%
+		{
+			WinMove, ahk_id %windowHandle%,,,,, %ruHeight%
+			G_RollupList.Delete(windowHandle)
+			return
+		}
+	}
+
+	WinGetPos,,,, wsHeight, ahk_id %windowHandle%
+	G_RollupList[windowHandle] := wsHeight
+
+	WinMove, ahk_id %windowHandle%,,,,, %rollupHeight%
+}
+
+;--------------------------------------------------------------------------------
+; RollupWindow - Roll up a window to just its title bar
+RestoreRollupWindows()
+{
+	global G_RollupList
+	
+	Loop, Parse, G_RollupList, |
+	{
+		if A_LoopField =  ; First field in list is normally blank.
+			continue      ; So skip it.
+		StringTrimRight, ws_Height, ws_Window%A_LoopField%, 0
+		WinMove, ahk_id %A_LoopField%,,,,, %ws_Height%
+	}
+}
+
+;--------------------------------------------------------------------------------
+; SendWindowToBack - Send a Window to the back of the zorder
+SendWindowToBack(theWindow)
+{
+	windowHandle := theWindow.WindowHandle
+	WinSet, Bottom, , ahk_id %windowHandle%`
 }
 
 ;--------------------------------------------------------------------------------
