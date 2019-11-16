@@ -356,8 +356,6 @@ ShowMenu(theWindow)
 	Menu, WindowMenu, Show
 }
 
-#Include WindowHotKeys.ahk
-
 ;--------------------------------------------------------------------------------
 ; WindowsKey+W
 #w::
