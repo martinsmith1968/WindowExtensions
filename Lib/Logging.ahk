@@ -1,5 +1,17 @@
 LogFile := A_Temp
 
+SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
+
+; Initialise Log
+LogFileSuffix := ""
+IfNotEqual, A_IsCompiled, 1
+{
+	LogFileSuffix := ".Debug"
+}
+
+LogFile := A_Temp . "\" . ScriptFileNameNoExt . LogFileSuffix . ".log"
+LogStart()
+
 ;--------------------------------------------------------------------------------
 ; LogText - Debug Text to a file
 LogText(text)
