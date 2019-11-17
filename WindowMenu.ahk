@@ -1,34 +1,9 @@
-#NoEnv  		; Recommended for performance and compatibility with future AutoHotkey releases.
-; #NoTrayIcon
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-
-CoordMode, Mouse, Screen
-
-SetFormat, float, 0.0
-SetBatchLines, 10ms 
-SetTitleMatchMode, 2
-
-;--------------------------------------------------------------------------------
-; Includes
 #Include Lib\Logging.ahk
 #Include Lib\WindowObjects.ahk
 #Include Lib\StringUtils.ahk
 #Include Lib\ArrayUtils.ahk
 #Include Lib\WindowFunctions.ahk
-
-;--------------------------------------------------------------------------------
-; Initialisation
-SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
-
-; Initialise Log
-LogFileSuffix := ""
-IfNotEqual, A_IsCompiled, 1
-{
-	LogFileSuffix := ".Debug"
-}
-
-LogFile := A_Temp . "\" . ScriptFileNameNoExt . LogFileSuffix . ".log"
-LogStart()
+#Include Lib\WindowPositions.ahk
 
 ;--------------------------------------------------------------------------------
 ; System Information
@@ -56,7 +31,9 @@ LogText("G_PrimaryMonitorIndex: " G_PrimaryMonitorIndex)
 ; Initialisation
 G_ActiveWindow :=
 G_CurrentMouse :=
+G_MenuTitle := AppTitle
 
+SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
 IconLibraryFileName := ScriptFilePath . "\" . ScriptFileNameNoExt . ".icl"
 
 IconIndexes := Object()
@@ -84,15 +61,9 @@ IconIndexes.Insert("POSITION_ZORDER_TOPMOSTTOGGLE")
 IconIndexes.Insert("SIZE_COMMON_ROLLUP")
 
 ;--------------------------------------------------------------------------------
-; Setup Menu
-Menu, Tray, Tip, Window Menu
-
-MenuTitle = Window Menu
-
-;--------------------------------------------------------------------------------
 ; Build Menu
-Menu, WindowMenu, Add, %MenuTitle%, NullHandler
-Menu, WindowMenu, Icon, %MenuTitle%, Shell32.dll, 20
+Menu, WindowMenu, Add, %G_MenuTitle%, NullHandler
+Menu, WindowMenu, Icon, %G_MenuTitle%, Shell32.dll, 20
 
 ; Standard Window Sizes
 Menu, WindowMenu, Add
@@ -142,6 +113,11 @@ AddWindowMenuItem("Set Transparency &75%", "TransparencySet75Handler", "POSITION
 AddWindowMenuItem("Set Transparency &50%", "TransparencySet50Handler", "POSITION_TRANSPARENCY50")
 AddWindowMenuItem("Set Transparency &25%", "TransparencySet25Handler", "POSITION_TRANSPARENCY25")
 AddWindowMenuItem("Set Transparency &0%", "TransparencySet0Handler", "POSITION_TRANSPARENCY0")
+
+; Window Positions
+Menu, WindowMenu, Add
+AddWindowMenuItem("Save Window Positions", "SavePositionsHandler", "POSITION_SAVE")
+AddWindowMenuItem("Restore Window Positions", "RestorePositionsHandler", "POSITION_RESTORE")
 
 ; Send to back
 Menu, WindowMenu, Add
@@ -280,6 +256,15 @@ SetWindowTransparency(G_ActiveWindow, 255)
 return
 
 ;--------------------------------------------------------------------------------
+SavePositionsHandler:
+SaveWindowPositions()
+return
+
+RestorePositionsHandler:
+RestoreWindowPositions()
+return
+
+;--------------------------------------------------------------------------------
 SendToBackHandler:
 SendWindowToBack(G_ActiveWindow)
 return
@@ -325,7 +310,7 @@ GetIconIndex(iconName)
 ; ShowMenu - Show the Window Control Menu
 ShowMenu(theWindow)
 {
-	global MenuTitle
+	global G_MenuTitle
 	
 	; Build Window Details
 	newMenuTitle := theWindow.Title . " (" . theWindow.ProcessName . ") [" . theWindow.Left . ", " . theWindow.Top . ", " . theWindow.Width . ", " . theWindow.Height . "]"
@@ -333,12 +318,19 @@ ShowMenu(theWindow)
 	processPath := theWindow.ProcessPath
 
 	; Change Menu
-	if (newMenuTitle <> MenuTitle)
+	if (newMenuTitle <> G_MenuTitle)
 	{
-		MenuTitle := newMenuTitle
-		Menu, WindowMenu, Rename, 1&,  %MenuTitle%
+		G_MenuTitle := newMenuTitle
+		Menu, WindowMenu, Rename, 1&,  %G_MenuTitle%
 	}
-	Menu, WindowMenu, Icon, 1&, %processPath%, 0
+	
+	try
+	{
+		Menu, WindowMenu, Icon, 1&, %processPath%, 0
+	}
+	catch e
+	{
+	}
 	
 	; Enable / Disable as appropriate
 	if (IsWindowTopMost(theWindow.WindowHandle))
