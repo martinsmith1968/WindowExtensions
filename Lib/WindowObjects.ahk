@@ -158,6 +158,17 @@ Class Window extends Rectangle
 		
 		this.WindowHandle := windowHandle
 	}
+	
+	Status
+	{
+		get
+		{
+			windowHandle := this.WindowHandle
+			WinGet, status, MinMax, ahk_id %windowHandle%
+			
+			return status
+		}
+	}
 
 	ProcessName
 	{
@@ -218,6 +229,14 @@ Class Window extends Rectangle
 			}
 			
 			return monitorIndex
+		}
+	}
+	
+	IsValid
+	{
+		get
+		{
+			return this.Width > 0 && this.Height > 0
 		}
 	}
 	
