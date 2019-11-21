@@ -99,6 +99,14 @@ Class Rectangle extends Coordinate
 		}
 	}
 	
+	IsValid
+	{
+		get
+		{
+			return this.Width > 0 && this.Height > 0
+		}
+	}
+	
 	Description
 	{
 		get
@@ -137,6 +145,14 @@ Class Rectangle2 extends Coordinate
 		}
 	}
 	
+	IsValid
+	{
+		get
+		{
+			return this.Width > 0 && this.Height > 0
+		}
+	}
+	
 	Description
 	{
 		get
@@ -149,47 +165,23 @@ Class Rectangle2 extends Coordinate
 Class Window extends Rectangle
 {
 	WindowHandle :=
+	WindowStatus :=
+	ProcessName  :=
+	ProcessPath  :=
 	
 	__New(windowHandle)
 	{
 		WinGetPos, left, top, width, height, ahk_id %windowHandle%
+		WinGet, status, MinMax, ahk_id %windowHandle%
+		WinGet, processName, ProcessName, ahk_id %windowHandle%
+		WinGet, processPath, ProcessPath, ahk_id %windowHandle%
 		
 		base.__New(left, top, width, height)
-		
-		this.WindowHandle := windowHandle
-	}
-	
-	Status
-	{
-		get
-		{
-			windowHandle := this.WindowHandle
-			WinGet, status, MinMax, ahk_id %windowHandle%
-			
-			return status
-		}
-	}
 
-	ProcessName
-	{
-		get
-		{
-			windowHandle := this.WindowHandle
-			WinGet, name, ProcessName, ahk_id %windowHandle%
-			
-			return name
-		}
-	}
-	
-	ProcessPath
-	{
-		get
-		{
-			windowHandle := this.WindowHandle
-			WinGet, path, ProcessPath, ahk_id %windowHandle%
-			
-			return path
-		}
+		this.WindowHandle := windowHandle
+		this.WindowStatus := status
+		this.ProcessName  := processName
+		this.ProcessPath  := processPath
 	}
 	
 	Title
@@ -200,6 +192,22 @@ Class Window extends Rectangle
 			WinGetTitle, title, ahk_id %windowHandle%
 			
 			return title
+		}
+	}
+	
+	IsTopmost
+	{
+		get
+		{
+			return IsWindowTopmost(this.WindowHandle)
+		}
+	}
+	
+	IsVisible
+	{
+		get
+		{
+			return IsWindowVisible(this.WindowHandle)
 		}
 	}
 	
@@ -229,14 +237,6 @@ Class Window extends Rectangle
 			}
 			
 			return monitorIndex
-		}
-	}
-	
-	IsValid
-	{
-		get
-		{
-			return this.Width > 0 && this.Height > 0
 		}
 	}
 	
