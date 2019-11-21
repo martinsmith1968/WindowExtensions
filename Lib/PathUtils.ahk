@@ -26,5 +26,5 @@ CombinePathA(paths*)
 
 DirectoryExists(path)
 {
-    return Instr(FileExist(path), "H")
+    return Instr(FileExist(path), "D")
 }
