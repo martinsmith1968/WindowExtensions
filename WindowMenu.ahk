@@ -33,10 +33,10 @@ LogText("G_PrimaryMonitorIndex: " G_PrimaryMonitorIndex)
 G_ActiveWindow :=
 G_CurrentMouse :=
 G_MenuTitle := AppTitle
-G_SaveWindowPositionsMenuIndex := 0
 G_SaveWindowPositionsMenuTitle := ""
-G_RestoreWindowPositionsMenuIndex := 0
 G_RestoreWindowPositionsMenuTitle := ""
+G_SaveDesktopIconsMenuTitle := ""
+G_RestoreDesktopIconsMenuTitle := ""
 
 SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
 IconLibraryFileName := ScriptFilePath . "\" . ScriptFileNameNoExt . ".icl"
@@ -103,11 +103,9 @@ menuIndex := AddWindowMenuItem("", "", "", menuIndex)
 
 G_SaveWindowPositionsMenuTitle := "Save Window &Positions"
 menuIndex := AddWindowMenuItem(G_SaveWindowPositionsMenuTitle, "SaveWindowPositionsHandler", "POSITION_SAVE", menuIndex)
-G_SaveWindowPositionsMenuIndex := menuIndex
 
 G_RestoreWindowPositionsMenuTitle := "Restore Window &Positions"
 menuIndex := AddWindowMenuItem(G_RestoreWindowPositionsMenuTitle, "RestoreWindowPositionsHandler", "POSITION_RESTORE", menuIndex)
-G_RestoreWindowPositionsMenuIndex := menuIndex
 
 ; Move to Corners
 menuIndex := AddWindowMenuItem("", "", "", menuIndex)
@@ -140,8 +138,12 @@ menuIndex := AddWindowMenuItem("Send to Bac&k", "SendToBackHandler", "POSITION_Z
 
 ; Window Positions
 menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("Save &Desktop Icons", "SaveDesktopIconsHandler", "DESKTOP_ICONS_SAVE", menuIndex)
-menuIndex := AddWindowMenuItem("Restore &Desktop Icons", "RestoreDesktopIconsHandler", "DESKTOP_ICONS_RESTORE", menuIndex)
+
+G_SaveDesktopIconsMenuTitle := "Save &Desktop Icons"
+menuIndex := AddWindowMenuItem(G_SaveDesktopIconsMenuTitle, "SaveDesktopIconsHandler", "DESKTOP_ICONS_SAVE", menuIndex)
+
+G_RestoreDesktopIconsMenuTitle := "Restore &Desktop Icons"
+menuIndex := AddWindowMenuItem(G_RestoreDesktopIconsMenuTitle, "RestoreDesktopIconsHandler", "DESKTOP_ICONS_RESTORE", menuIndex)
 
 ; Cancel menu
 menuIndex := AddWindowMenuItem("", "", "", menuIndex)
@@ -349,10 +351,10 @@ GetIconIndex(iconName)
 ShowMenu(theWindow)
 {
 	global G_MenuTitle
-	global G_SaveWindowPositionsMenuIndex
 	global G_SaveWindowPositionsMenuTitle
-	global G_RestoreWindowPositionsMenuIndex
 	global G_RestoreWindowPositionsMenuTitle
+	global G_SaveDesktopIconsMenuTitle
+	global G_RestoreDesktopIconsMenuTitle
 	
 	; Build Window Details
 	newMenuTitle := theWindow.Title . " (" . theWindow.ProcessName . ") [" . theWindow.Left . ", " . theWindow.Top . ", " . theWindow.Width . ", " . theWindow.Height . "]"
@@ -369,7 +371,7 @@ ShowMenu(theWindow)
 	; Configure Window Positions Menu
 	desktopSize := GetDesktopSize()
 	
-	title := "Save Window Positions (" . GetDimensions(desktopSize) . ")"
+	title := "Save Window &Positions (" . desktopSize.DimensionsText . ")"
 	if (title <> G_SaveWindowPositionsMenuTitle)
 	{
 		Menu, WindowMenu, Rename, %G_SaveWindowPositionsMenuTitle%, %title%
@@ -377,12 +379,28 @@ ShowMenu(theWindow)
 		LogText("G_SaveWindowPositionsMenuTitle: " . G_SaveWindowPositionsMenuTitle)
 	}
 	
-	title := "Restore Window Positions (" . GetDimensions(desktopSize) . ")"
+	title := "Restore Window &Positions (" . desktopSize.DimensionsText . ")"
 	if (title <> G_RestoreWindowPositionsMenuTitle)
 	{
 		Menu, WindowMenu, Rename, %G_RestoreWindowPositionsMenuTitle%, %title%
 		G_RestoreWindowPositionsMenuTitle := title
 		LogText("G_RestoreWindowPositionsMenuTitle: " . G_RestoreWindowPositionsMenuTitle)
+	}
+	
+	title := "Save &Desktop Icons (" . desktopSize.DimensionsText . ")"
+	if (title <> G_SaveDesktopIconsMenuTitle)
+	{
+		Menu, WindowMenu, Rename, %G_SaveDesktopIconsMenuTitle%, %title%
+		G_SaveDesktopIconsMenuTitle := title
+		LogText("G_SaveDesktopIconsMenuTitle: " . G_SaveDesktopIconsMenuTitle)
+	}
+	
+	title := "Restore &Desktop Icons (" . desktopSize.DimensionsText . ")"
+	if (title <> G_RestoreDesktopIconsMenuTitle)
+	{
+		Menu, WindowMenu, Rename, %G_RestoreDesktopIconsMenuTitle%, %title%
+		G_RestoreDesktopIconsMenuTitle := title
+		LogText("G_RestoreDesktopIconsMenuTitle: " . G_RestoreDesktopIconsMenuTitle)
 	}
 	
 	If (HasSavedWindowPositionFile(desktopSize))
@@ -392,6 +410,15 @@ ShowMenu(theWindow)
 	else
 	{
 		Menu, WindowMenu, Disable, %G_RestoreWindowPositionsMenuTitle%
+	}
+	
+	If (HasSavedDesktopIconsFile(desktopSize))
+	{
+		Menu, WindowMenu, Enable, %G_RestoreDesktopIconsMenuTitle%
+	}
+	else
+	{
+		Menu, WindowMenu, Disable, %G_RestoreDesktopIconsMenuTitle%
 	}
 	
 	try
