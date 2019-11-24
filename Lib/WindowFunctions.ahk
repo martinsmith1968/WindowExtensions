@@ -229,6 +229,30 @@ GetWindowNormalPosition(windowHandle)
 }
 
 ;--------------------------------------------------------------------------------
+; GetDesktopSize - Get the size of the whole desktop surface, all monitors combined
+GetDesktopSize()
+{
+    SysGet, monitorCount, MonitorCount
+	
+    desktopSize := new Rectangle2(0, 0)
+    desktopSize.Right := 0
+    desktopSize.Bottom := 0
+    
+	Loop, %monitorCount%
+	{
+		; Get Monitor Details
+		monitor := new Monitor(A_Index)
+        
+        desktopSize.Left   := MinOf(monitor.Left, desktopSize.Left)
+        desktopSize.Right  := MaxOf(monitor.Right, desktopSize.Right)
+        desktopSize.Top    := MinOf(monitor.Top, desktopSize.Top)
+        desktopSize.Bottom := MaxOf(monitor.Bottom, desktopSize.Bottom)
+    }
+    
+    return desktopSize
+}
+
+;--------------------------------------------------------------------------------
 ; RollupToggleWindow - Roll up a window to just its title bar
 RollupToggleWindow(theWindow, rollupHeight)
 {
@@ -297,4 +321,24 @@ GetMonitorIndexAt(x, y, defaultMonitor = -1)
     }
 
     return defaultMonitor
+}
+
+;--------------------------------------------------------------------------------
+; FindCurrentWindowForProcessName - Find the first main window for the given process name
+FindCurrentWindowForProcessName(processName)
+{
+    WinGet windows, List
+
+    Loop %windows%
+    {
+        windowHandle := windows%A_Index%
+        
+        window := new Window(windowHandle)
+        if (window.ProcessName = processName)
+        {
+            return window
+        }
+    }
+    
+    return
 }

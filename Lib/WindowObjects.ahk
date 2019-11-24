@@ -106,6 +106,14 @@ Class Rectangle extends Coordinate
 			return this.Width > 0 && this.Height > 0
 		}
 	}
+
+	DimensionsText
+	{
+		get
+		{
+			return this.Width . "x" . this.Height
+		}
+	}
 	
 	Description
 	{
@@ -153,6 +161,14 @@ Class Rectangle2 extends Coordinate
 		}
 	}
 	
+	DimensionsText
+	{
+		get
+		{
+			return this.Width . "x" . this.Height
+		}
+	}
+	
 	Description
 	{
 		get
@@ -184,6 +200,17 @@ Class Window extends Rectangle
 		this.ProcessPath  := processPath
 	}
 	
+	IsValid
+	{
+		get
+		{
+			if (!this.WindowHandle)
+				return false
+			
+			return WinExist("ahk_id " . this.WindowHandle)
+		}
+	}
+	
 	Title
 	{
 		get
@@ -192,6 +219,18 @@ Class Window extends Rectangle
 			WinGetTitle, title, ahk_id %windowHandle%
 			
 			return title
+		}
+	}
+	
+	ProcessId
+	{
+		get
+		{
+			handle := this.WindowHandle
+			
+			WinGet, processId, PID, ahk_id %handle%
+			
+			return processId			
 		}
 	}
 	
@@ -288,5 +327,60 @@ Class Monitor extends Rectangle2
 		{
 			return "MonitorIndex: " . this.MonitorIndex . ", " . base.Description
 		}
+	}
+}
+
+class Desktop
+{
+	DefViewParentWindow :=
+	DefViewWindow :=
+	SysListView32Window :=
+	
+	__New()
+	{
+		; Inspired by : https://www.autohotkey.com/boards/viewtopic.php?t=70072&p=302495
+		
+		;handle := DllCall("User32.dll\GetDesktopWindow", "UPtr")
+		;this.DesktopWindow := new Window(handle)
+		
+		shellWindowHandle := DllCall("User32.dll\GetShellWindow", "UPtr")
+		this.DefViewParentWindow := new Window(shellWindowHandle)
+		this.LocateChildWindows(handle)
+		
+		if (!this.IsValid)
+		{
+			WinGet, workerWHandles, list, ahk_class WorkerW
+			Loop, %workerWHandles%
+			{
+				workerWHandle := workerWHandles%A_Index%
+				
+				this.LocateChildWindows(workerWHandle)
+				if (this.IsValid)
+					break
+			}
+		}
+	}
+	
+	IsValid
+	{
+		get
+		{
+			if (!this.DefViewParentWindow || !this.DefViewParentWindow.IsValid)
+				return false
+			if (!this.DefViewWindow || !this.DefViewWindow.IsValid)
+				return false
+			if (!this.SysListView32Window || !this.SysListView32Window.IsValid)
+				return false
+			return true
+		}
+	}
+	
+	LocateChildWindows(parentHandle)
+	{
+		defViewHandle := DllCall("user32\FindWindowEx", "Ptr", parentHandle, "Ptr", 0, "Str","SHELLDLL_DefView", "Ptr", 0, "Ptr")
+		this.DefViewWindow := new Window(defViewHandle)
+		
+		sysListViewHandle := DllCall("user32\FindWindowEx", "Ptr", defViewHandle, "Ptr", 0, "Str", "SysListView32", "Str", "FolderView", "Ptr")
+		this.SysListView32Window := new Window(sysListViewHandle)
 	}
 }
