@@ -4,8 +4,39 @@
 #Include Lib\WindowObjects.ahk
 #Include Lib\WindowFunctions.ahk
 #Include Lib\MathUtils.ahk
+#Include Lib\UserDataUtils.ahk
 
-; TODO Support Minimized / Maximized
+;--------------------------------------------------------------------------------
+; Configuration
+WindowPositionsBaseFileName := "WindowPositions"
+
+;--------------------------------------------------------------------------------
+HasSavedWindowPositionFile(desktopSize)
+{
+    fileName := GetWindowPositionsDataFileName(desktopSize)
+    
+    return FileExist(fileName)
+}
+
+;--------------------------------------------------------------------------------
+GetWindowPositionsDataFileName(desktopSize)
+{
+    global WindowPositionsBaseFileName
+    
+    dimensions := desktopSize.DimensionsText
+
+    fileName := WindowPositionsBaseFileName
+    if (dimensions != "")
+    {
+        fileName =  %fileName%-%dimensions%
+    }
+    
+    fileName = %fileName%.dat
+
+    dataFileName := GetUserDataFileName(fileName)
+
+    return dataFileName
+}
 
 ;--------------------------------------------------------------------------------
 BuildWindowFromDefinition(text, separator = "|")
@@ -25,6 +56,7 @@ BuildWindowFromDefinition(text, separator = "|")
     return window
 }
 
+;--------------------------------------------------------------------------------
 GetWindowDefinition(window, separator = "|")
 {
     parts := []
@@ -44,76 +76,20 @@ GetWindowDefinition(window, separator = "|")
 }    
 
 ;--------------------------------------------------------------------------------
-; Initialisation
-SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
-
-;--------------------------------------------------------------------------------
-; Configuration
-UserDataPath := CombinePaths(A_AppData, ScriptFileNameNoExt)
-UserDataFileName := "WindowPositions"
-;UserDataFile := CombinePaths(UserDataPath, UserDataFileName . ".dat")
-
-If !DirectoryExists(UserDataPath)
-{    
-    LogText("Creating UserDataPath: " . UserDataPath)
-    FileCreateDir, %UserDataPath%
-}
-
-;--------------------------------------------------------------------------------
-GetDimensions(rectangle)
+HasMoved(window1, window2)
 {
-    return rectangle.Width . "x" . rectangle.Height
-}
-
-;--------------------------------------------------------------------------------
-GetUserDataFileName(desktopSize)
-{
-    global UserDataPath
-    global UserDataFileName
+    if (window1.Left <> window2.Left)
+        return True
+    if (window1.Top <> window2.Top)
+        return True
+    if (window1.Width <> window2.Width)
+        return True
+    if (window1.Height <> window2.Height)
+        return True
+    if (window1.WindowStatus <> window2.WindowStatus)
+        return True
     
-    dimensions := GetDimensions(desktopSize)
-    
-    fileName := CombinePaths(UserDataPath, UserDataFileName)
-    
-    if (dimensions != "")
-    {
-        fileName =  %fileName%-%dimensions%
-    }
-    
-    fileName = %fileName%.dat
-    
-    return fileName
-}
-
-;--------------------------------------------------------------------------------
-GetDesktopSize()
-{
-    SysGet, monitorCount, MonitorCount
-	
-    desktopSize := new Rectangle2(0, 0)
-    desktopSize.Right := 0
-    desktopSize.Bottom := 0
-    
-	Loop, %monitorCount%
-	{
-		; Get Monitor Details
-		monitor := new Monitor(A_Index)
-        
-        desktopSize.Left   := MinOf(monitor.Left, desktopSize.Left)
-        desktopSize.Right  := MaxOf(monitor.Right, desktopSize.Right)
-        desktopSize.Top    := MinOf(monitor.Top, desktopSize.Top)
-        desktopSize.Bottom := MaxOf(monitor.Bottom, desktopSize.Bottom)
-    }
-    
-    return desktopSize
-}
-
-;--------------------------------------------------------------------------------
-HasSavedWindowPositionFile(desktopSize)
-{
-    fileName := GetUserDataFileName(desktopSize)
-    
-    return FileExist(fileName)
+    return False
 }
 
 ;--------------------------------------------------------------------------------
@@ -121,7 +97,7 @@ SaveWindowPositions()
 {
     desktopSize := GetDesktopSize()
     
-    fileName := GetUserDataFileName(desktopSize)
+    fileName := GetWindowPositionsDataFileName(desktopSize)
     
     If FileExist(fileName)
     {
@@ -172,11 +148,11 @@ SaveWindowPositions()
     
     If saveCount > 0
     {
-        TrayTip , %fileName%, "No Window Positions saved", 3, 2
+        TrayTip , %fileName%, % saveCount . " Window Positions saved", 3, 1
     }
     else
     {
-        TrayTip , %fileName%, % saveCount . " Window Positions saved", 3, 1
+        TrayTip , %fileName%, "No Window Positions saved", 3, 2
     }
 }
 
@@ -185,7 +161,7 @@ RestoreWindowPositions()
 {
     desktopSize := GetDesktopSize()
     
-    fileName := GetUserDataFileName(desktopSize)
+    fileName := GetWindowPositionsDataFileName(desktopSize)
     
     If !FileExist(fileName)
     {
@@ -245,38 +221,4 @@ RestoreWindowPositions()
     LogText("WindowPositions: " . restoreCount . " windows restored, " . moveCount . " windows moved")
     
     TrayTip , %fileName%, % restoreCount . " Window Positions restored, " . moveCount . " windows moved", 3, 1
-}
-
-HasMoved(window1, window2)
-{
-    if (window1.Left <> window2.Left)
-        return True
-    if (window1.Top <> window2.Top)
-        return True
-    if (window1.Width <> window2.Width)
-        return True
-    if (window1.Height <> window2.Height)
-        return True
-    if (window1.WindowStatus <> window2.WindowStatus)
-        return True
-    
-    return False
-}
-
-FindCurrentWindowForProcessName(processName)
-{
-    WinGet windows, List
-
-    Loop %windows%
-    {
-        windowHandle := windows%A_Index%
-        
-        window := new Window(windowHandle)
-        if (window.ProcessName = processName)
-        {
-            return window
-        }
-    }
-    
-    return
 }
