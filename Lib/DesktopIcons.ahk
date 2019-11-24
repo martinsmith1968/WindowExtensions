@@ -7,9 +7,8 @@
 
 ;--------------------------------------------------------------------------------
 ; Constants
-Critical
-static MEM_COMMIT := 0x1000, PAGE_READWRITE := 0x04, MEM_RELEASE := 0x8000
-static LVM_GETITEMPOSITION := 0x00001010, LVM_SETITEMPOSITION := 0x0000100F, WM_SETREDRAW := 0x000B
+global MEM_COMMIT := 0x1000, PAGE_READWRITE := 0x04, MEM_RELEASE := 0x8000
+global LVM_GETITEMCOUNT := 0x00001004, LVM_GETITEMPOSITION := 0x00001010, LVM_SETITEMPOSITION := 0x0000100F, WM_SETREDRAW := 0x000B
 
 ;--------------------------------------------------------------------------------
 ; Configuration
@@ -41,29 +40,6 @@ GetDesktopIconsDataFileName(desktopSize)
     dataFileName := GetUserDataFileName(fileName)
 
     return dataFileName
-}
-
-GetDesktopListView()
-{
-	shellWindowHandle := DllCall("User32.dll\GetShellWindow", "UPtr")
-	
-	Winget, defViewHandle, ID, ahk_class Progman
-	
-	Winget, defViewHandle2, ID, ahk_class SHELLDLL_DefView
-	
-	ControlGet, defViewHandl2, HWND, , SHELLDLL_DefView, ahk_id %defViewHandle%
-	
-	ControlGet, defViewHandle, HWND,, SysListView321, ahk_id %shellWindowHandle%
-	
-	ControlGet, listViewHandle, HWND,, SysListView321, ahk_id %shellWindowHandle%
-	
-	
-	return listViewHandle
-}
-
-GetListViewItemCount(handle)
-{
-	SendMessage, 0xC, 0, &MyVar, ClassNN, WinTitle  
 }
 
 /*
