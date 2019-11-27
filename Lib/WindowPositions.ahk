@@ -76,7 +76,7 @@ GetWindowDefinition(window, separator = "|")
 }    
 
 ;--------------------------------------------------------------------------------
-HasMoved(window1, window2)
+HasWindowMoved(window1, window2)
 {
     if (window1.Left <> window2.Left)
         return True
@@ -205,7 +205,7 @@ RestoreWindowPositions()
             currentWindow.Height := restoredPosition.Height
         }
     
-        If (HasMoved(savedWindow, currentWindow))
+        If (HasWindowMoved(savedWindow, currentWindow))
         {
             LogText("Moving: " . currentWindow.Description)
             LogText("To: " . savedWindow.Description)
@@ -218,7 +218,7 @@ RestoreWindowPositions()
         restoreCount += 1
     }
     
-    LogText("WindowPositions: " . restoreCount . " windows restored, " . moveCount . " windows moved")
-    
-    TrayTip , %fileName%, % restoreCount . " Window Positions restored, " . moveCount . " windows moved", 3, 1
+    text := "WindowPositions: " . restoreCount . " windows restored, " . moveCount . " windows moved"
+    LogText(text)
+    TrayTip , %fileName%, %text%, 3, 1
 }
