@@ -5,9 +5,12 @@
 #Include Lib\MathUtils.ahk
 #Include Lib\UserDataUtils.ahk
 
+; Inspired by : https://autohotkey.com/board/topic/60982-deskicons-getset-desktop-icon-positions/
+
 ;--------------------------------------------------------------------------------
 ; Constants
-global MEM_COMMIT := 0x1000, PAGE_READWRITE := 0x04, MEM_RELEASE := 0x8000
+global MEM_COMMIT := 0x1000, MEM_RESERVE := 0x2000, MEM_RELEASE := 0x8000
+global PAGE_READWRITE := 0x04
 global LVM_GETITEMCOUNT := 0x00001004, LVM_GETITEMPOSITION := 0x00001010, LVM_SETITEMPOSITION := 0x0000100F, WM_SETREDRAW := 0x000B
 
 ;--------------------------------------------------------------------------------
@@ -42,84 +45,99 @@ GetDesktopIconsDataFileName(desktopSize)
     return dataFileName
 }
 
-/*
---------------------------------------------------------------------------------
-	Save and Load desktop icon positions
-	based on save/load desktop icon positions by temp01 (http://www.autohotkey.com/forum/viewtopic.php?t=49714)
-	
-	Example:
-		; save positions
-		coords := DeskIcons()
-		MsgBox now move the icons around yourself
-		; load positions
-		DeskIcons(coords)
-	
-	Plans:
-		handle more settings (icon sizes, sort order, etc)
-			- http://msdn.microsoft.com/en-us/library/ff485961%28v=VS.85%29.aspx
-	
---------------------------------------------------------------------------------
-; From : https://autohotkey.com/board/topic/60982-deskicons-getset-desktop-icon-positions/
-*/
-DeskIcons(coords="")
+;--------------------------------------------------------------------------------
+BuildDesktopIconFromDefinition(text, separator = "|")
 {
-	
-	
-	handleShellWindow := DllCall("User32.dll\GetShellWindow", "UPtr")
-	handleDefViewParent := handleShellWindow
-	handleDefView := 
-
-	ControlGet, hwWindow, HWND,, SysListView32, ahk_class Progman
-	if !hwWindow ; #D mode
-		ControlGet, hwWindow, HWND,, SysListView32, A
-	if !hwWindow
-		ControlGet, hwWindow, HWND,, SysListView321, ahk_class WorkerW
-	
-	;hwWindow := DllCall("User32.dll\GetDesktopWindow", "UPtr")
-	
-	IfWinExist ahk_id %hwWindow% ; last-found window set
-		WinGet, iProcessID, PID
-	hProcess := DllCall("OpenProcess"	, "UInt",	0x438			; PROCESS-OPERATION|READ|WRITE|QUERY_INFORMATION
-										, "Int",	FALSE			; inherit = false
-										, "UInt",	iProcessID)
-	
-	if hwWindow and hProcess
-	{	
-		ControlGet, list, list,Col1			
-		if !coords
-		{
-			VarSetCapacity(iCoord, 8)
-			pItemCoord := DllCall("VirtualAllocEx", "UInt", hProcess, "UInt", 0, "UInt", 8, "UInt", MEM_COMMIT, "UInt", PAGE_READWRITE)
-			Loop, Parse, list, `n
-			{
-				SendMessage, %LVM_GETITEMPOSITION%, % A_Index-1, %pItemCoord%
-				DllCall("ReadProcessMemory", "UInt", hProcess, "UInt", pItemCoord, "UInt", &iCoord, "UInt", 8, "UIntP", cbReadWritten)
-				ret .= A_LoopField ":" (NumGet(iCoord) & 0xFFFF) | ((Numget(iCoord, 4) & 0xFFFF) << 16) "`n"
-			}
-			DllCall("VirtualFreeEx", "UInt", hProcess, "UInt", pItemCoord, "UInt", 0, "UInt", MEM_RELEASE)
-		}
-		else
-		{
-			SendMessage, %WM_SETREDRAW%,0,0
-			Loop, Parse, list, `n
-				If RegExMatch(coords,"\Q" A_LoopField "\E:\K.*",iCoord_new)
-					SendMessage, %LVM_SETITEMPOSITION%, % A_Index-1, %iCoord_new%
-			SendMessage, %WM_SETREDRAW%,1,0
-			ret := true
-		}
-	}
-	DllCall("CloseHandle", "UInt", hProcess)
-	return ret
+    parts := StrSplit(text, separator)
+    
+    icon := new IconPosition(parts[1], parts[2])
+	icon.Title := parts[3]
+    
+    return icon
 }
 
+;--------------------------------------------------------------------------------
+GetIconPositionDefinition(iconPosition, separator = "|")
+{
+    parts := []
+    parts.Push(iconPosition.Left)
+    parts.Push(iconPosition.Top)
+    parts.Push(iconPosition.Title)
+
+    definition := JoinItems(separator, parts)
+
+    return definition
+}    
+
+;--------------------------------------------------------------------------------
 GetDesktopIconPositions(desktop)
 {
 	icons := []
 	
+	try
+	{
+		listViewHandle := desktop.SysListView32Window.WindowHandle
+		
+		SendMessage, %LVM_GETITEMCOUNT%, , , , ahk_id %listViewHandle%
+		iconCount := ErrorLevel
+		
+		iconNames := []
+		ControlGet, items, list, Col1
+		Loop, Parse, items, `n
+		{
+			iconNames.push(A_LoopField)
+		}
+		
+		hProcess := DllCall("OpenProcess"	, "UInt",	0x438			; PROCESS-OPERATION|READ|WRITE|QUERY_INFORMATION
+											, "Int",	FALSE			; inherit = false
+											, "UInt",	desktop.SysListView32Window.ProcessId)
+
+		VarSetCapacity(iCoord, 8)
+		pItemCoord := DllCall("VirtualAllocEx", "UInt", hProcess, "UInt", 0, "UInt", 8, "UInt", MEM_COMMIT | MEM_RESERVE, "UInt", PAGE_READWRITE)
+		Loop, %iconCount%
+		{
+			index := A_Index - 1
+			
+			DllCall("WriteProcessMemory", "UInt", hProcess, "UInt", pItemCoord, "UInt", &iCoord, "UInt", 8, "UIntP", cbReadWritten)
+			SendMessage, %LVM_GETITEMPOSITION%, %index%, %pItemCoord%
+			DllCall("ReadProcessMemory", "UInt", hProcess, "UInt", pItemCoord, "UInt", &iCoord, "UInt", 8, "UIntP", cbReadWritten)
+			
+			x := (NumGet(iCoord) & 0xFFFF)
+			y := (NumGet(iCoord, 4, "UInt") & 0xFFFF)
+			title := iconNames[index + 1]
+			
+			iconPosition := new IconPosition(x, y)
+			iconPosition.Index := index
+			iconPosition.Title := title
+			
+			icons.push(iconPosition)
+		}
+		DllCall("VirtualFreeEx", "UInt", hProcess, "UInt", pItemCoord, "UInt", 0, "UInt", MEM_RELEASE)
+	}
+	catch e
+	{
+		LogText("Exception: " . e.Message . ", What: " . e.What . ", Extra: " . e.Extra)
+	}
+	finally
+	{
+		DllCall("CloseHandle", "UInt", hProcess)
+	}
 	
 	return icons
 }
 
+;--------------------------------------------------------------------------------
+HasIconMoved(icon1, icon2)
+{
+    if (icon1.Left <> icon2.Left)
+        return True
+    if (icon1.Top <> icon2.Top)
+        return True
+    
+    return False
+}
+
+;--------------------------------------------------------------------------------
 SaveDesktopIcons()
 {
 	desktop := new Desktop()
@@ -136,19 +154,16 @@ SaveDesktopIcons()
         FileDelete , %fileName%
     }
 	
-	icons := GetDesktopIconPositions(desktop)
-	
-	FileAppend , %icons%, %fileName%	
-	
+	iconPositions := GetDesktopIconPositions(desktop)
 	
 	saveCount := 0
-	For key, icon in icons
+	for i, iconPosition in iconPositions
 	{
+		xx := iconPositions[i]
 		
-		
-		data := icon
-		FileAppend , %data%, %fileName%
-		
+		data := GetIconPositionDefinition(iconPosition)
+	
+		FileAppend , % data . "`r`n", %fileName%
 		saveCount += 1
 	}
     
@@ -164,6 +179,77 @@ SaveDesktopIcons()
     }
 }
 
+;--------------------------------------------------------------------------------
 RestoreDesktopIcons()
 {
+	desktop := new Desktop()
+	if (!desktop.IsValid)
+		return
+	
+    desktopSize := GetDesktopSize()
+    
+    fileName := GetDesktopIconsDataFileName(desktopSize)
+    
+    If !FileExist(fileName)
+    {
+        MsgBox , 48, Restore Desktop Icons, Unable to locate file %fileName%
+        return
+    }
+
+    ; Read the file into an array
+    savedIcons := []
+    Loop, Read, %fileName%
+    {
+        if (A_LoopReadLine = "")
+            break
+        
+        savedIcon := BuildDesktopIconFromDefinition(A_LoopReadLine)
+        if savedIcon
+        {
+            savedIcons.Push(savedIcon)
+        }
+    }
+	
+	currentIcons := GetDesktopIconPositions(desktop)
+
+    restoreCount := 0
+    moveCount := 0
+	for key, currentIcon in currentIcons
+	{
+		foundIcon :=
+		for x, savedIcon in savedIcons
+		{
+			if (savedIcon.Title = currentIcon.Title)
+			{
+				foundIcon := savedIcon
+				break
+			}
+		}
+		
+		if (!foundIcon)
+		{
+			LogText("No saved Icon for : " . currentIcon.Title)
+			continue
+		}
+		
+        If (HasIconMoved(foundIcon, currentIcon))
+        {
+			index := currentIcon.Index
+			
+            LogText("Moving: " . currentIcon.Description)
+            LogText("To: " . foundIcon.Description)
+            
+			pItemCoord := (foundIcon.Top << 16) | foundIcon.Left
+			LogText("pItemCoord: " . pItemCoord)
+			
+			SendMessage, %LVM_SETITEMPOSITION%, %index%, %pItemCoord%
+			
+            moveCount += 1
+        }
+        restoreCount += 1
+	}
+    
+	text := "DesktopIcons: " . restoreCount . " icons restored, " . moveCount . " icons moved"
+    LogText(text)
+    TrayTip , %fileName%, %text%, 3, 1
 }
