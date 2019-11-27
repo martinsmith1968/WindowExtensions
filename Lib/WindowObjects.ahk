@@ -384,3 +384,22 @@ class Desktop
 		this.SysListView32Window := new Window(sysListViewHandle)
 	}
 }
+
+Class IconPosition extends Coordinate
+{
+	Index := -1
+	Title := 0
+
+	__New(x, y)
+	{
+		base.__New(x, y)
+	}
+	
+	Description
+	{
+		get
+		{
+			return "Icon: " . this.Index . ", Title: " . this.Title . ", " . base.Description
+		}
+	}
+}
