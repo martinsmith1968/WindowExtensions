@@ -4,6 +4,7 @@
 #Include Lib\WindowObjects.ahk
 #Include Lib\MathUtils.ahk
 #Include Lib\UserDataUtils.ahk
+#Include Lib\PleasantNotify.ahk
 
 ; Inspired by : https://autohotkey.com/board/topic/60982-deskicons-getset-desktop-icon-positions/
 
@@ -171,11 +172,14 @@ SaveDesktopIcons()
     
     If saveCount > 0
     {
-        TrayTip , %fileName%, % saveCount . " Desktop Icons saved", 3, 1
+		text := saveCount . " Desktop Icons saved"
+		PleasantNotify("Desktop Icons", text, 250, 150, "b r", "3")
+        ;TrayTip , %fileName%, % saveCount . " Desktop Icons saved", 3, 1
     }
     else
     {
-        TrayTip , %fileName%, "No Desktop Icons saved", 3, 2
+		PleasantNotify("Desktop Icons", "No Desktop Icons saved", 250, 150, "b r", "3")
+        ;TrayTip , %fileName%, "No Desktop Icons saved", 3, 2
     }
 }
 
