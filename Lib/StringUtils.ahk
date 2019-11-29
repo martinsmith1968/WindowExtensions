@@ -6,14 +6,30 @@ StringRepeat(string, times)
 	Return output
 }
 
-EnsureEndsWith(string, suffix)
+EnsureEndsWith(text, suffix)
 {
 	suffixLength := suffix.Length
 
-	currentSuffix := SubStr(string, -1 * suffixLength)
+	currentSuffix := SubStr(text, -1 * suffixLength)
 
 	If (currentSuffix != suffix)
-		string := string . suffix
+		text := text . suffix
 	
-	return string
+	return text
+}
+
+JoinText(sep, params*)
+{
+    for index, param in params
+        str .= param . sep
+	
+    return SubStr(str, 1, -StrLen(sep))
+}
+
+JoinItems(sep, array)
+{
+    for index, param in array
+        str .= param . sep
+	
+    return SubStr(str, 1, -StrLen(sep))
 }

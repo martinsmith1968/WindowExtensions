@@ -19,7 +19,7 @@ LogText(text)
 	global LogFile
 	
 	FormatTime now,, yyy-MM-dd HH:mm.ss
-	FileAppend %now% %text%`n, %LogFile%
+	FileAppend %now% %text%`r`n, %LogFile%
 }
 
 ;--------------------------------------------------------------------------------

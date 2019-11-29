@@ -99,6 +99,22 @@ Class Rectangle extends Coordinate
 		}
 	}
 	
+	IsValid
+	{
+		get
+		{
+			return this.Width > 0 && this.Height > 0
+		}
+	}
+
+	DimensionsText
+	{
+		get
+		{
+			return this.Width . "x" . this.Height
+		}
+	}
+	
 	Description
 	{
 		get
@@ -137,6 +153,22 @@ Class Rectangle2 extends Coordinate
 		}
 	}
 	
+	IsValid
+	{
+		get
+		{
+			return this.Width > 0 && this.Height > 0
+		}
+	}
+	
+	DimensionsText
+	{
+		get
+		{
+			return this.Width . "x" . this.Height
+		}
+	}
+	
 	Description
 	{
 		get
@@ -149,46 +181,33 @@ Class Rectangle2 extends Coordinate
 Class Window extends Rectangle
 {
 	WindowHandle :=
+	WindowStatus :=
+	ProcessName  :=
+	ProcessPath  :=
 	
 	__New(windowHandle)
 	{
 		WinGetPos, left, top, width, height, ahk_id %windowHandle%
+		WinGet, status, MinMax, ahk_id %windowHandle%
+		WinGet, processName, ProcessName, ahk_id %windowHandle%
+		WinGet, processPath, ProcessPath, ahk_id %windowHandle%
 		
 		base.__New(left, top, width, height)
-		
-		this.WindowHandle := windowHandle
-	}
-	
-	Status
-	{
-		get
-		{
-			windowHandle := this.WindowHandle
-			WinGet, status, MinMax, ahk_id %windowHandle%
-			
-			return status
-		}
-	}
 
-	ProcessName
-	{
-		get
-		{
-			windowHandle := this.WindowHandle
-			WinGet, name, ProcessName, ahk_id %windowHandle%
-			
-			return name
-		}
+		this.WindowHandle := windowHandle
+		this.WindowStatus := status
+		this.ProcessName  := processName
+		this.ProcessPath  := processPath
 	}
 	
-	ProcessPath
+	IsValid
 	{
 		get
 		{
-			windowHandle := this.WindowHandle
-			WinGet, path, ProcessPath, ahk_id %windowHandle%
+			if (!this.WindowHandle)
+				return false
 			
-			return path
+			return WinExist("ahk_id " . this.WindowHandle)
 		}
 	}
 	
@@ -200,6 +219,34 @@ Class Window extends Rectangle
 			WinGetTitle, title, ahk_id %windowHandle%
 			
 			return title
+		}
+	}
+	
+	ProcessId
+	{
+		get
+		{
+			handle := this.WindowHandle
+			
+			WinGet, processId, PID, ahk_id %handle%
+			
+			return processId			
+		}
+	}
+	
+	IsTopmost
+	{
+		get
+		{
+			return IsWindowTopmost(this.WindowHandle)
+		}
+	}
+	
+	IsVisible
+	{
+		get
+		{
+			return IsWindowVisible(this.WindowHandle)
 		}
 	}
 	
@@ -229,14 +276,6 @@ Class Window extends Rectangle
 			}
 			
 			return monitorIndex
-		}
-	}
-	
-	IsValid
-	{
-		get
-		{
-			return this.Width > 0 && this.Height > 0
 		}
 	}
 	
@@ -287,6 +326,80 @@ Class Monitor extends Rectangle2
 		get
 		{
 			return "MonitorIndex: " . this.MonitorIndex . ", " . base.Description
+		}
+	}
+}
+
+class Desktop
+{
+	DefViewParentWindow :=
+	DefViewWindow :=
+	SysListView32Window :=
+	
+	__New()
+	{
+		; Inspired by : https://www.autohotkey.com/boards/viewtopic.php?t=70072&p=302495
+		
+		;handle := DllCall("User32.dll\GetDesktopWindow", "UPtr")
+		;this.DesktopWindow := new Window(handle)
+		
+		shellWindowHandle := DllCall("User32.dll\GetShellWindow", "UPtr")
+		this.DefViewParentWindow := new Window(shellWindowHandle)
+		this.LocateChildWindows(handle)
+		
+		if (!this.IsValid)
+		{
+			WinGet, workerWHandles, list, ahk_class WorkerW
+			Loop, %workerWHandles%
+			{
+				workerWHandle := workerWHandles%A_Index%
+				
+				this.LocateChildWindows(workerWHandle)
+				if (this.IsValid)
+					break
+			}
+		}
+	}
+	
+	IsValid
+	{
+		get
+		{
+			if (!this.DefViewParentWindow || !this.DefViewParentWindow.IsValid)
+				return false
+			if (!this.DefViewWindow || !this.DefViewWindow.IsValid)
+				return false
+			if (!this.SysListView32Window || !this.SysListView32Window.IsValid)
+				return false
+			return true
+		}
+	}
+	
+	LocateChildWindows(parentHandle)
+	{
+		defViewHandle := DllCall("user32\FindWindowEx", "Ptr", parentHandle, "Ptr", 0, "Str","SHELLDLL_DefView", "Ptr", 0, "Ptr")
+		this.DefViewWindow := new Window(defViewHandle)
+		
+		sysListViewHandle := DllCall("user32\FindWindowEx", "Ptr", defViewHandle, "Ptr", 0, "Str", "SysListView32", "Str", "FolderView", "Ptr")
+		this.SysListView32Window := new Window(sysListViewHandle)
+	}
+}
+
+Class IconPosition extends Coordinate
+{
+	Index := -1
+	Title := 0
+
+	__New(x, y)
+	{
+		base.__New(x, y)
+	}
+	
+	Description
+	{
+		get
+		{
+			return "Icon: " . this.Index . ", Title: " . this.Title . ", " . base.Description
 		}
 	}
 }

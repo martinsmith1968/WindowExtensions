@@ -1,4 +1,5 @@
 #Include Lib\Logging.ahk
+#Include Lib\WindowObjects.ahk
 
 G_RollupList := Object()
 
@@ -27,6 +28,27 @@ MoveWindow(theWindow, winLeft, winTop)
 	WinMove , ahk_id %windowHandle%, , winLeft, winTop
 	WinActivate, ahk_id %windowHandle%
 	WinShow, ahk_id %windowHandle%
+}
+
+;--------------------------------------------------------------------------------
+; SetWindowStatus - Set the Window Minimized / Maximized status
+SetWindowStatus(theWindow, status)
+{
+	windowHandle := theWindow.WindowHandle
+	
+	LogText("Window: " . theWindow.ProcessName . " (" . windowHandle . ") Status: " . status)
+	If (status = 1)
+	{
+		WinMaximize, ahk_id %windowHandle%
+	}
+	else if (status = -1)
+	{
+		WinMinimize, ahk_id %windowHandle%
+	}
+	else
+	{
+		WinRestore , ahk_id %windowHandle%
+	}
 }
 
 ;--------------------------------------------------------------------------------
@@ -180,6 +202,57 @@ IsWindowTopMost(windowHandle)
 }
 
 ;--------------------------------------------------------------------------------
+; IsWindowVisible - Detect if a window is visible
+IsWindowVisible(windowHandle)
+{
+	WinGet, Style, Style, ahk_id %windowHandle%
+	Transform, result, BitAnd, %Style%, 0x10000000 ; 0x10000000 is WS_VISIBLE.
+	
+	return result <> 0
+}
+
+;--------------------------------------------------------------------------------
+; GetWindowNormalPosition - Get the restored position of a window
+GetWindowNormalPosition(windowHandle)
+{
+    VarSetCapacity(wp, 44), NumPut(44, wp)
+    DllCall("GetWindowPlacement", "uint", windowHandle, "uint", &wp)
+	
+    x := NumGet(wp, 28, "int")
+    y := NumGet(wp, 32, "int")
+    w := NumGet(wp, 36, "int") - x
+    h := NumGet(wp, 40, "int") - y
+	
+	rect := new Rectangle(x, y, w, h)
+	
+	return rect
+}
+
+;--------------------------------------------------------------------------------
+; GetDesktopSize - Get the size of the whole desktop surface, all monitors combined
+GetDesktopSize()
+{
+    SysGet, monitorCount, MonitorCount
+	
+    desktopSize := new Rectangle2(0, 0)
+    desktopSize.Right := 0
+    desktopSize.Bottom := 0
+    
+	Loop, %monitorCount%
+	{
+		; Get Monitor Details
+		monitor := new Monitor(A_Index)
+        
+        desktopSize.Left   := MinOf(monitor.Left, desktopSize.Left)
+        desktopSize.Right  := MaxOf(monitor.Right, desktopSize.Right)
+        desktopSize.Top    := MinOf(monitor.Top, desktopSize.Top)
+        desktopSize.Bottom := MaxOf(monitor.Bottom, desktopSize.Bottom)
+    }
+    
+    return desktopSize
+}
+
+;--------------------------------------------------------------------------------
 ; RollupToggleWindow - Roll up a window to just its title bar
 RollupToggleWindow(theWindow, rollupHeight)
 {
@@ -248,4 +321,24 @@ GetMonitorIndexAt(x, y, defaultMonitor = -1)
     }
 
     return defaultMonitor
+}
+
+;--------------------------------------------------------------------------------
+; FindCurrentWindowForProcessName - Find the first main window for the given process name
+FindCurrentWindowForProcessName(processName)
+{
+    WinGet windows, List
+
+    Loop %windows%
+    {
+        windowHandle := windows%A_Index%
+        
+        window := new Window(windowHandle)
+        if (window.ProcessName = processName)
+        {
+            return window
+        }
+    }
+    
+    return
 }

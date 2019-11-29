@@ -24,3 +24,8 @@ Menu, Tray, Tip, %AppTitle%
 ; Modules
 #include WindowMenu.ahk
 #Include WindowHotKeys.ahk
+
+;--------------------------------------------------------------------------------
+; ToDo
+; Include Icons for each menu entry
+; User Configuration (Gutter Size, etc)

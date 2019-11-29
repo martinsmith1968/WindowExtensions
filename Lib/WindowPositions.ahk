@@ -2,33 +2,108 @@
 #Include Lib\StringUtils.ahk
 #Include Lib\PathUtils.ahk
 #Include Lib\WindowObjects.ahk
-
-;--------------------------------------------------------------------------------
-; Initialisation
-SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
+#Include Lib\WindowFunctions.ahk
+#Include Lib\MathUtils.ahk
+#Include Lib\UserDataUtils.ahk
+#Include Lib\PleasantNotify.ahk
 
 ;--------------------------------------------------------------------------------
 ; Configuration
-UserDataPath := CombinePaths(A_AppData, ScriptFileNameNoExt)
-UserDataFileName := "WindowPositions"
-UserDataFile := CombinePaths(UserDataPath, UserDataFileName . ".dat")
+WindowPositionsBaseFileName := "WindowPositions"
 
-If !DirectoryExists(UserDataPath)
-{    
-    LogText("Creating UserDataPath: " . UserDataPath)
-    FileCreateDir, %UserDataPath%
+;--------------------------------------------------------------------------------
+HasSavedWindowPositionFile(desktopSize)
+{
+    fileName := GetWindowPositionsDataFileName(desktopSize)
+    
+    return FileExist(fileName)
+}
+
+;--------------------------------------------------------------------------------
+GetWindowPositionsDataFileName(desktopSize)
+{
+    global WindowPositionsBaseFileName
+    
+    dimensions := desktopSize.DimensionsText
+
+    fileName := WindowPositionsBaseFileName
+    if (dimensions != "")
+    {
+        fileName =  %fileName%-%dimensions%
+    }
+    
+    fileName = %fileName%.dat
+
+    dataFileName := GetUserDataFileName(fileName)
+
+    return dataFileName
+}
+
+;--------------------------------------------------------------------------------
+BuildWindowFromDefinition(text, separator = "|")
+{
+    parts := StrSplit(text, separator)
+    
+    window := new Window(parts[1])
+    window.Left := parts[2]
+    window.Top := parts[3]
+    window.Width := parts[4]
+    window.Height := parts[5]
+    window.WindowStatus := parts[6]
+    isVisible := parts[7]
+    window.ProcessName := parts[8]
+    title := parts[9]
+    
+    return window
+}
+
+;--------------------------------------------------------------------------------
+GetWindowDefinition(window, separator = "|")
+{
+    parts := []
+    parts.Push(window.WindowHandle)
+    parts.Push(window.Left)
+    parts.Push(window.Top)
+    parts.Push(window.Width)
+    parts.Push(window.Height)
+    parts.Push(window.WindowStatus)
+    parts.Push(window.IsVisible)
+    parts.Push(window.ProcessName)
+    parts.Push(window.Title)
+
+    definition := JoinItems(separator, parts)
+
+    return definition
+}    
+
+;--------------------------------------------------------------------------------
+HasWindowMoved(window1, window2)
+{
+    if (window1.Left <> window2.Left)
+        return True
+    if (window1.Top <> window2.Top)
+        return True
+    if (window1.Width <> window2.Width)
+        return True
+    if (window1.Height <> window2.Height)
+        return True
+    if (window1.WindowStatus <> window2.WindowStatus)
+        return True
+    
+    return False
 }
 
 ;--------------------------------------------------------------------------------
 SaveWindowPositions()
 {
-    global UserDataPath
-    global UserDataFile
+    desktopSize := GetDesktopSize()
     
-    If FileExist(UserDataFile)
+    fileName := GetWindowPositionsDataFileName(desktopSize)
+    
+    If FileExist(fileName)
     {
-        LogText("Removing old Data File: " . UserDataFile)
-        FileDelete , %UserDataFile%
+        LogText("Removing old Data File: " . fileName)
+        FileDelete , %fileName%
     }
 
     saveCount := 0
@@ -39,56 +114,115 @@ SaveWindowPositions()
         windowHandle := windows%A_Index%
         
         window := new Window(windowHandle)
-
         LogText(A_Index . ": " . window.Description)
 
-        If window.Status = -1   ; Minimized
+        isVisible := IsWindowVisible(windowHandle)
+
+        restored := GetWindowNormalPosition(windowHandle)
+        if (!restored.IsValid)
         {
-            if !window.IsValid
-            {
-                WinRestore, ahk_id %windowHandle%
-                WinGetPos, x, y, w, h, ahk_id %windowHandle%
-                WinMinimize, ahk_id %windowHandle%
-                
-                window.Left := x
-                window.Top := y
-                window.Width := w
-                window.Height := h
-            }
+            WinRestore, ahk_id %windowHandle%
+            WinGetPos, x, y, w, h, ahk_id %windowHandle%
+            SetWindowStatus(window, window.WindowStatus)
+            
+            restored := new Rectangle(x, y, w, h)
+        }
+        
+        if (restored.IsValid)
+        {
+            window.Left := restored.Left
+            window.Top := restored.Top
+            window.Width := restored.Width
+            window.Height := restored.Height
         }
 
-        if window.Title && window.IsValid
+        if (window.Title && window.IsValid && isVisible)
         {
             saveCount += 1
-            data := window.WindowHandle . "," . window.ProcessName . "," . window.Title . "," . window.Left . "," . window.Top . "," . window.Width . "," . window.Height . "`n"
+            data := GetWindowDefinition(window)
             LogText("Saving: " . data)
-            FileAppend , %data%, %UserDataFile%
+            FileAppend , % data . "`r`n", %fileName%
         }
     }
     
+    LogText("WindowPositions: " . saveCount . " windows written to " . fileName)
+    
+    notifyText := "No Window Positions saved"
     If saveCount > 0
     {
-        TrayTip , UserDataFileName, "No Window Positions saved", 3, 2
+		notifyText := saveCount . " Window Positions saved"
     }
-    else
-    {
-        TrayTip , UserDataFileName, saveCount . " Window Positions saved", 3, 1
-    }
+
+    new PleasantNotify("Window Positions", notifyText, 250, 100, "b r")
 }
 
 ;--------------------------------------------------------------------------------
 RestoreWindowPositions()
 {
+    desktopSize := GetDesktopSize()
+    
+    fileName := GetWindowPositionsDataFileName(desktopSize)
+    
+    If !FileExist(fileName)
+    {
+        MsgBox , 48, Restore Window Positions, Unable to locate file %fileName%
+        return
+    }
 
-}
+    ; Read the file into an array
+    savedWindows := []
+    Loop, Read, %fileName%
+    {
+        if (A_LoopReadLine = "")
+            break
+        
+        savedWindow := BuildWindowFromDefinition(A_LoopReadLine)
+        if savedWindow
+        {
+            savedWindows.Push(savedWindow)
+        }
+    }
 
-;--------------------------------------------------------------------------------
-WinGetNormalPos(hwnd, ByRef x, ByRef y, ByRef w="", ByRef h="")
-{
-    VarSetCapacity(wp, 44), NumPut(44, wp)
-    DllCall("GetWindowPlacement", "uint", hwnd, "uint", &wp)
-    x := NumGet(wp, 28, "int")
-    y := NumGet(wp, 32, "int")
-    w := NumGet(wp, 36, "int") - x
-    h := NumGet(wp, 40, "int") - y
+    restoreCount := 0
+    moveCount := 0
+    For key, savedWindow in savedWindows
+    {
+        currentWindow := new Window(savedWindow.WindowHandle)
+        if (currentWindow.ProcessName <> savedWindow.ProcessName)
+        {
+            ; Find current window for appname
+            currentWindow := FindCurrentWindowForProcessName(savedWindow.ProcessName)
+            if (!currentWindow.IsValid)
+                continue
+        }
+        
+        restoredPosition := GetWindowNormalPosition(currentWindow.WindowHandle)
+        if (restoredPosition.IsValid)
+        {
+            currentWindow.Left := restoredPosition.Left
+            currentWindow.Top := restoredPosition.Top
+            currentWindow.Width := restoredPosition.Width
+            currentWindow.Height := restoredPosition.Height
+        }
+    
+        If (HasWindowMoved(savedWindow, currentWindow))
+        {
+            LogText("Moving: " . currentWindow.Description)
+            LogText("To: " . savedWindow.Description)
+            SetWindowStatus(currentWindow, 0)
+            MoveAndSizeWindow(currentWindow, savedWindow.Left, savedWindow.Top, savedWindow.Width, savedWindow.Height)
+            SetWindowStatus(currentWindow, savedWindow.WindowStatus)
+            
+            moveCount += 1
+        }
+        restoreCount += 1
+    }
+    
+	textParts := []
+	textParts.push(restoreCount . " windows restored")
+	textParts.push(moveCount . " windows moved")
+    
+    LogText("WindowPositions: " . JoinItems(", ", textParts))
+
+    new PleasantNotify("Window Positions", JoinItems("`r`n", textParts), 350, 125, "b r")
 }
