@@ -27,4 +27,5 @@ Menu, Tray, Tip, %AppTitle%
 
 ;--------------------------------------------------------------------------------
 ; ToDo
+; Include Icons for each menu entry
 ; User Configuration (Gutter Size, etc)
