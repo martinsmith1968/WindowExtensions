@@ -28,5 +28,3 @@ Menu, Tray, Tip, %AppTitle%
 ;--------------------------------------------------------------------------------
 ; ToDo
 ; User Configuration (Gutter Size, etc)
-; Toast Notifications
-

@@ -147,15 +147,13 @@ SaveWindowPositions()
     
     LogText("WindowPositions: " . saveCount . " windows written to " . fileName)
     
+    notifyText := "No Window Positions saved"
     If saveCount > 0
     {
-		text := saveCount . " Window Positions saved"
-		PleasantNotify("Window Positions", text, 250, 100, "b r", "3")
+		notifyText := saveCount . " Window Positions saved"
     }
-    else
-    {
-        PleasantNotify("Window Positions", "No Desktop Icons saved", 250, 100, "b r", "3")
-    }
+
+    new PleasantNotify("Window Positions", notifyText, 250, 100, "b r")
 }
 
 ;--------------------------------------------------------------------------------
@@ -220,8 +218,11 @@ RestoreWindowPositions()
         restoreCount += 1
     }
     
-	text := restoreCount . " windows restored, " . moveCount . " windows moved"
-    LogText("WindowPositions: " . text)
+	textParts := []
+	textParts.push(restoreCount . " windows restored")
+	textParts.push(moveCount . " windows moved")
     
-    PleasantNotify("Window Positions", text, 350, 100, "b r", "3")
+    LogText("WindowPositions: " . JoinItems(", ", textParts))
+
+    new PleasantNotify("Window Positions", JoinItems("`r`n", textParts), 350, 125, "b r")
 }

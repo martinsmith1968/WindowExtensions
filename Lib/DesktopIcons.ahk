@@ -170,15 +170,13 @@ SaveDesktopIcons()
     
     LogText("DesktopIcons: " . saveCount . " icons written to " . fileName)
     
+	notifyText := "No Desktop Icons saved"
     If saveCount > 0
     {
-		text := saveCount . " Desktop Icons saved"
-		PleasantNotify("Desktop Icons", text, 250, 100, "b r", "3")
-    }
-    else
-    {
-		PleasantNotify("Desktop Icons", "No Desktop Icons saved", 250, 100, "b r", "3")
-    }
+		notifyText := saveCount . " Desktop Icons saved"
+	}
+	
+	new PleasantNotify("Desktop Icons", notifyText, 250, 100, "b r")
 }
 
 ;--------------------------------------------------------------------------------
@@ -250,9 +248,12 @@ RestoreDesktopIcons()
         }
         restoreCount += 1
 	}
-    
-	text := restoreCount . " icons restored, " . moveCount . " icons moved"
-    LogText("DesktopIcons: " . text)
+
+	textParts := []
+	textParts.push(restoreCount . " icons restored")
+	textParts.push(moveCount . " icons moved")
+
+    LogText("DesktopIcons: " . JoinItems(", ", textParts))
 	
-	PleasantNotify("Desktop Icons", text, 300, 100, "b r", "3")
+	new PleasantNotify("Desktop Icons", JoinItems("`r`n", textParts), 300, 125, "b r")
 }
