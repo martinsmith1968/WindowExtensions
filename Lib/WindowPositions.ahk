@@ -5,6 +5,7 @@
 #Include Lib\WindowFunctions.ahk
 #Include Lib\MathUtils.ahk
 #Include Lib\UserDataUtils.ahk
+#Include Lib\PleasantNotify.ahk
 
 ;--------------------------------------------------------------------------------
 ; Configuration
@@ -148,11 +149,12 @@ SaveWindowPositions()
     
     If saveCount > 0
     {
-        TrayTip , %fileName%, % saveCount . " Window Positions saved", 3, 1
+		text := saveCount . " Window Positions saved"
+		PleasantNotify("Window Positions", text, 250, 100, "b r", "3")
     }
     else
     {
-        TrayTip , %fileName%, "No Window Positions saved", 3, 2
+        PleasantNotify("Window Positions", "No Desktop Icons saved", 250, 100, "b r", "3")
     }
 }
 
@@ -218,7 +220,8 @@ RestoreWindowPositions()
         restoreCount += 1
     }
     
-    text := "WindowPositions: " . restoreCount . " windows restored, " . moveCount . " windows moved"
-    LogText(text)
-    TrayTip , %fileName%, %text%, 3, 1
+	text := restoreCount . " windows restored, " . moveCount . " windows moved"
+    LogText("WindowPositions: " . text)
+    
+    PleasantNotify("Window Positions", text, 350, 100, "b r", "3")
 }

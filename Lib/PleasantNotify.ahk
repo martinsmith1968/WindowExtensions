@@ -1,14 +1,20 @@
+; From : https://www.autohotkey.com/boards/viewtopic.php?t=6056
+
+pn_BackColor := 0xF2F2F0
+pn_BackColor := 0xC0C0C0 
+
 PleasantNotify(title, message, pnW=700, pnH=300, position="b r", time=10) {
     global pn_title, pn_msg, PN_hwnd, w, h
+	global pn_BackColor, pn_TitleColor
 	Notify_Destroy()
 	Gui, Notify: +AlwaysOnTop +ToolWindow -SysMenu -Caption +LastFound
 	PN_hwnd := WinExist()
 	WinSet, ExStyle, +0x20
 	WinSet, Transparent, 0
-	Gui, Notify: Color, 0xF2F2F0
-	Gui, Notify: Font, c0x07D82F s18 wBold, Segoe UI
+	Gui, Notify: Color, % pn_BackColor
+	Gui, Notify: Font, c0x000080 s14 wBold, Segoe UI
 	Gui, Notify: Add, Text, % " x" 20 " y" 12 " w" pnW-20 " vpn_title", % title
-	Gui, Notify: Font, cBlack s15 wRegular
+	Gui, Notify: Font, cBlack s12 wRegular
 	Gui, Notify: Add, Text, % " x" 20 " y" 56 " w" pnW-20 " h" pnH-56 " vpn_msg", % message
 	RealW := pnW + 50
 	RealH := pnH + 20

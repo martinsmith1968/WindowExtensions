@@ -173,13 +173,11 @@ SaveDesktopIcons()
     If saveCount > 0
     {
 		text := saveCount . " Desktop Icons saved"
-		PleasantNotify("Desktop Icons", text, 250, 150, "b r", "3")
-        ;TrayTip , %fileName%, % saveCount . " Desktop Icons saved", 3, 1
+		PleasantNotify("Desktop Icons", text, 250, 100, "b r", "3")
     }
     else
     {
-		PleasantNotify("Desktop Icons", "No Desktop Icons saved", 250, 150, "b r", "3")
-        ;TrayTip , %fileName%, "No Desktop Icons saved", 3, 2
+		PleasantNotify("Desktop Icons", "No Desktop Icons saved", 250, 100, "b r", "3")
     }
 }
 
@@ -253,7 +251,8 @@ RestoreDesktopIcons()
         restoreCount += 1
 	}
     
-	text := "DesktopIcons: " . restoreCount . " icons restored, " . moveCount . " icons moved"
-    LogText(text)
-    TrayTip , %fileName%, %text%, 3, 1
+	text := restoreCount . " icons restored, " . moveCount . " icons moved"
+    LogText("DesktopIcons: " . text)
+	
+	PleasantNotify("Desktop Icons", text, 300, 100, "b r", "3")
 }
