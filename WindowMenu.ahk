@@ -17,16 +17,12 @@ SysGet, G_PrimaryMonitorIndex, MonitorPrimary
 G_CaptionHitHeight := G_CaptionHeight + (G_BorderHeight * 2)
 G_LeftAlignedMenus := (G_MenuDropAlignment = 0)
 
-G_CascadeGutterSize := 30
-G_ColumnGutterSize := 0
-G_GridGutterSize := 0
-G_SpanMonitorGutterSize := 0
-
 LogText("G_CaptionHeight: " G_CaptionHeight)
 LogText("G_BorderHeight: " G_BorderHeight)
-LogText("G_CaptionHitHeight: " G_CaptionHitHeight)
 LogText("G_MonitorCount: " G_MonitorCount)
 LogText("G_PrimaryMonitorIndex: " G_PrimaryMonitorIndex)
+LogText("G_CaptionHitHeight: " G_CaptionHitHeight)
+LogText("G_LeftAlignedMenus: " G_LeftAlignedMenus)
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -166,59 +162,59 @@ ExitApp  ; Must do this for the OnExit subroutine to actually Exit the script.
 
 ;--------------------------------------------------------------------------------
 OptimumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 1))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.GutterSize * 1))
 return
 
 SubOptimumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 2))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.GutterSize * 2))
 return
 
 MediumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 3))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.GutterSize * 3))
 return
 
 SmallSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 3))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.GutterSize * 4))
 return
 
 TinySizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 5))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.GutterSize * 5))
 return
 
 ;--------------------------------------------------------------------------------
 MoveColumnLeftHandler:
-SetWindowByColumn(G_ActiveWindow, 1, 3, G_ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 1, 3, G_UserConfig.ColumnGutterSize)
 return
 
 MoveColumnCentreHandler:
-SetWindowByColumn(G_ActiveWindow, 2, 3, G_ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 2, 3, G_UserConfig.ColumnGutterSize)
 return
 
 MoveColumnRightHandler:
-SetWindowByColumn(G_ActiveWindow, 3, 3, G_ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 3, 3, G_UserConfig.ColumnGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
 SpanCurrentMonitorHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, monitorWorkArea.Top, monitorWorkArea.Right, monitorWorkArea.Bottom, G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, monitorWorkArea.Top, monitorWorkArea.Right, monitorWorkArea.Bottom, G_UserConfig.SpanMonitorGutterSize)
 return
 
 SpanMonitorWidthHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, "", monitorWorkArea.Top, "", monitorWorkArea.Bottom, G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, "", monitorWorkArea.Top, "", monitorWorkArea.Bottom, G_UserConfig.SpanMonitorGutterSize)
 return
 
 SpanMonitorHeightHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, "", monitorWorkArea.Right, "", G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, "", monitorWorkArea.Right, "", G_UserConfig.SpanMonitorGutterSize)
 return
 
 SpanAllMonitorsHandler:
-SetWindowSpanMonitors(G_ActiveWindow, "", "", "", "", G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, "", "", "", "", G_UserConfig.SpanMonitorGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
@@ -236,19 +232,19 @@ SetWindowToCentre(G_ActiveWindow)
 return
 
 MoveTopLeftHandler:
-SetWindowByGrid(G_ActiveWindow, 1, 1, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 1, 1, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 MoveTopRightHandler:
-SetWindowByGrid(G_ActiveWindow, 1, 2, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 1, 2, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 MoveBottomLeftHandler:
-SetWindowByGrid(G_ActiveWindow, 2, 1, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 2, 1, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 MoveBottomRightHandler:
-SetWindowByGrid(G_ActiveWindow, 2, 2, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 2, 2, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
