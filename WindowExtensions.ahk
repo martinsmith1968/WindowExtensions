@@ -14,8 +14,14 @@ SetTitleMatchMode, 2
 AppTitle := "Window Extensions"
 
 ;--------------------------------------------------------------------------------
-; Setup Menu
+; Setup Tray Menu
+Menu, Tray, NoStandard
 Menu, Tray, Tip, %AppTitle%
+
+Menu, Tray, Add, Con&figure..., TrayConfigureHandler
+try Menu, Tray, Icon, Con&figure..., %A_ScriptFullPath%, 0
+Menu, Tray, Add
+Menu, Tray, Add, Exit, TrayExitHandler
 
 ;--------------------------------------------------------------------------------
 ; Includes
@@ -30,6 +36,18 @@ G_UserConfig := new WindowExtensionsUserConfig()
 ; Modules
 #include WindowMenu.ahk
 #Include WindowHotKeys.ahk
+#Include WindowExtensionsUserConfigGui.ahk
+
+return
+
+;--------------------------------------------------------------------------------
+TrayExitHandler:
+ExitApp
+
+;--------------------------------------------------------------------------------
+TrayConfigureHandler:
+ShowUserConfig()
+return
 
 ;--------------------------------------------------------------------------------
 ; ToDo
