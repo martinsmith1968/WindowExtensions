@@ -52,7 +52,4 @@ return
 ;--------------------------------------------------------------------------------
 ; ToDo
 ; ====
-; Include Icons for each menu entry
-; User Configuration Dialog
 ; Support other config value types
-; Remove AHK menu entries from Tray Icon

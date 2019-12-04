@@ -339,16 +339,14 @@ GetIconIndex(iconName)
 {
 	global IconIndexes
 	
-	LogText("Looking for Icon: " . iconName)
 	for index, element in IconIndexes
 	{
 		If (element = iconName)
 		{
-			LogText("Found " . iconName . " at: " . index)
 			return index
 		}
 	}
-	LogText("Not Found " . iconName)
+
 	return 0
 }
 
