@@ -17,16 +17,12 @@ SysGet, G_PrimaryMonitorIndex, MonitorPrimary
 G_CaptionHitHeight := G_CaptionHeight + (G_BorderHeight * 2)
 G_LeftAlignedMenus := (G_MenuDropAlignment = 0)
 
-G_CascadeGutterSize := 30
-G_ColumnGutterSize := 0
-G_GridGutterSize := 0
-G_SpanMonitorGutterSize := 0
-
 LogText("G_CaptionHeight: " G_CaptionHeight)
 LogText("G_BorderHeight: " G_BorderHeight)
-LogText("G_CaptionHitHeight: " G_CaptionHitHeight)
 LogText("G_MonitorCount: " G_MonitorCount)
 LogText("G_PrimaryMonitorIndex: " G_PrimaryMonitorIndex)
+LogText("G_CaptionHitHeight: " G_CaptionHitHeight)
+LogText("G_LeftAlignedMenus: " G_LeftAlignedMenus)
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -41,29 +37,37 @@ G_RestoreDesktopIconsMenuTitle := ""
 SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
 IconLibraryFileName := ScriptFilePath . "\" . ScriptFileNameNoExt . ".icl"
 
-IconIndexes := Object()
-IconIndexes.Insert("MOVESIZE_COLUMN_CENTRE")
-IconIndexes.Insert("MOVESIZE_COLUMN_LEFT")
-IconIndexes.Insert("MOVESIZE_COLUMN_RIGHT")
-IconIndexes.Insert("MOVESIZE_COMMON_MEDIUM")
-IconIndexes.Insert("MOVESIZE_COMMON_OPTIMUM")
-IconIndexes.Insert("MOVESIZE_COMMON_SMALL")
-IconIndexes.Insert("MOVESIZE_COMMON_SUBOPTIMUM")
-IconIndexes.Insert("MOVESIZE_COMMON_TINY")
-IconIndexes.Insert("MOVE_CENTRE")
-IconIndexes.Insert("MOVE_CORNER_BOTTOMLEFT")
-IconIndexes.Insert("MOVE_CORNER_BOTTOMRIGHT")
-IconIndexes.Insert("MOVE_CORNER_TOPLEFT")
-IconIndexes.Insert("MOVE_CORNER_TOPRIGHT")
-IconIndexes.Insert("POSITION_TRANSPARENCY0")
-IconIndexes.Insert("POSITION_TRANSPARENCY25")
-IconIndexes.Insert("POSITION_TRANSPARENCY50")
-IconIndexes.Insert("POSITION_TRANSPARENCY75")
-IconIndexes.Insert("POSITION_ZORDER_SENDTOBACK")
-IconIndexes.Insert("POSITION_ZORDER_TOPMOSTOFF")
-IconIndexes.Insert("POSITION_ZORDER_TOPMOSTON")
-IconIndexes.Insert("POSITION_ZORDER_TOPMOSTTOGGLE")
-IconIndexes.Insert("SIZE_COMMON_ROLLUP")
+IconIndexes := []
+IconIndexes.push("MONITOR_FIT")
+IconIndexes.push("MOVESIZE_COLUMN_CENTRE")
+IconIndexes.push("MOVESIZE_COLUMN_LEFT")
+IconIndexes.push("MOVESIZE_COLUMN_RIGHT")
+IconIndexes.push("MOVESIZE_COMMON_MEDIUM")
+IconIndexes.push("MOVESIZE_COMMON_OPTIMUM")
+IconIndexes.push("MOVESIZE_COMMON_SMALL")
+IconIndexes.push("MOVESIZE_COMMON_SUBOPTIMUM")
+IconIndexes.push("MOVESIZE_COMMON_TINY")
+IconIndexes.push("MOVE_CENTRE")
+IconIndexes.push("MOVE_CORNER_BOTTOMLEFT")
+IconIndexes.push("MOVE_CORNER_BOTTOMRIGHT")
+IconIndexes.push("MOVE_CORNER_TOPLEFT")
+IconIndexes.push("MOVE_CORNER_TOPRIGHT")
+IconIndexes.push("POSITION_TRANSPARENCY0")
+IconIndexes.push("POSITION_TRANSPARENCY25")
+IconIndexes.push("POSITION_TRANSPARENCY50")
+IconIndexes.push("POSITION_TRANSPARENCY75")
+IconIndexes.push("POSITION_ZORDER_SENDTOBACK")
+IconIndexes.push("POSITION_ZORDER_TOPMOSTOFF")
+IconIndexes.push("POSITION_ZORDER_TOPMOSTON")
+IconIndexes.push("POSITION_ZORDER_TOPMOSTTOGGLE")
+IconIndexes.push("SIZE_COMMON_ROLLUP")
+IconIndexes.push("MONITOR_SPAN_ALL")
+IconIndexes.push("MONITOR_SPAN_HEIGHT")
+IconIndexes.push("MONITOR_SPAN_WIDTH")
+IconIndexes.push("POSITION_RESTORE")
+IconIndexes.push("POSITION_SAVE")
+IconIndexes.push("DESKTOPICONS_RESTORE")
+IconIndexes.push("DESKTOPICONS_SAVE")
 
 ;--------------------------------------------------------------------------------
 ; Build Menu
@@ -90,12 +94,12 @@ menuIndex := AddWindowMenuItem("&Right Column", "MoveColumnRightHandler", "MOVES
 
 ; Multi-Monitor spanning
 menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("&Fit Current Monitor", "SpanCurrentMonitorHandler", "MOVESIZE_SPAN_CURRENT", menuIndex)
+menuIndex := AddWindowMenuItem("&Fit Current Monitor", "SpanCurrentMonitorHandler", "MONITOR_FIT", menuIndex)
 if (G_MonitorCount > 1)
 {
-    menuIndex := AddWindowMenuItem("Span &Monitor Width", "SpanMonitorWidthHandler", "MOVESIZE_SPAN_WIDTH", menuIndex)
-    menuIndex := AddWindowMenuItem("Span &Monitor Height", "SpanMonitorHeightHandler", "MOVESIZE_SPAN_HEIGHT", menuIndex)
-    menuIndex := AddWindowMenuItem("Span &All Monitors", "SpanAllMonitorsHandler", "MOVESIZE_SPAN_ALL", menuIndex)
+    menuIndex := AddWindowMenuItem("Span &Monitor Width", "SpanMonitorWidthHandler", "MONITOR_SPAN_WIDTH", menuIndex)
+    menuIndex := AddWindowMenuItem("Span &Monitor Height", "SpanMonitorHeightHandler", "MONITOR_SPAN_HEIGHT", menuIndex)
+    menuIndex := AddWindowMenuItem("Span &All Monitors", "SpanAllMonitorsHandler", "MONITOR_SPAN_ALL", menuIndex)
 }
 
 ; Window Positions
@@ -140,10 +144,10 @@ menuIndex := AddWindowMenuItem("Send to Bac&k", "SendToBackHandler", "POSITION_Z
 menuIndex := AddWindowMenuItem("", "", "", menuIndex)
 
 G_SaveDesktopIconsMenuTitle := "Save &Desktop Icons"
-menuIndex := AddWindowMenuItem(G_SaveDesktopIconsMenuTitle, "SaveDesktopIconsHandler", "DESKTOP_ICONS_SAVE", menuIndex)
+menuIndex := AddWindowMenuItem(G_SaveDesktopIconsMenuTitle, "SaveDesktopIconsHandler", "DESKTOPICONS_SAVE", menuIndex)
 
 G_RestoreDesktopIconsMenuTitle := "Restore &Desktop Icons"
-menuIndex := AddWindowMenuItem(G_RestoreDesktopIconsMenuTitle, "RestoreDesktopIconsHandler", "DESKTOP_ICONS_RESTORE", menuIndex)
+menuIndex := AddWindowMenuItem(G_RestoreDesktopIconsMenuTitle, "RestoreDesktopIconsHandler", "DESKTOPICONS_RESTORE", menuIndex)
 
 ; Cancel menu
 menuIndex := AddWindowMenuItem("", "", "", menuIndex)
@@ -166,59 +170,59 @@ ExitApp  ; Must do this for the OnExit subroutine to actually Exit the script.
 
 ;--------------------------------------------------------------------------------
 OptimumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 1))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 1))
 return
 
 SubOptimumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 2))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 2))
 return
 
 MediumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 3))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 3))
 return
 
 SmallSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 3))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 4))
 return
 
 TinySizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_CascadeGutterSize * 5))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 5))
 return
 
 ;--------------------------------------------------------------------------------
 MoveColumnLeftHandler:
-SetWindowByColumn(G_ActiveWindow, 1, 3, G_ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 1, 3, G_UserConfig.ColumnGutterSize)
 return
 
 MoveColumnCentreHandler:
-SetWindowByColumn(G_ActiveWindow, 2, 3, G_ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 2, 3, G_UserConfig.ColumnGutterSize)
 return
 
 MoveColumnRightHandler:
-SetWindowByColumn(G_ActiveWindow, 3, 3, G_ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 3, 3, G_UserConfig.ColumnGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
 SpanCurrentMonitorHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, monitorWorkArea.Top, monitorWorkArea.Right, monitorWorkArea.Bottom, G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, monitorWorkArea.Top, monitorWorkArea.Right, monitorWorkArea.Bottom, G_UserConfig.SpanMonitorGutterSize)
 return
 
 SpanMonitorWidthHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, "", monitorWorkArea.Top, "", monitorWorkArea.Bottom, G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, "", monitorWorkArea.Top, "", monitorWorkArea.Bottom, G_UserConfig.SpanMonitorGutterSize)
 return
 
 SpanMonitorHeightHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, "", monitorWorkArea.Right, "", G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, "", monitorWorkArea.Right, "", G_UserConfig.SpanMonitorGutterSize)
 return
 
 SpanAllMonitorsHandler:
-SetWindowSpanMonitors(G_ActiveWindow, "", "", "", "", G_SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, "", "", "", "", G_UserConfig.SpanMonitorGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
@@ -236,19 +240,19 @@ SetWindowToCentre(G_ActiveWindow)
 return
 
 MoveTopLeftHandler:
-SetWindowByGrid(G_ActiveWindow, 1, 1, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 1, 1, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 MoveTopRightHandler:
-SetWindowByGrid(G_ActiveWindow, 1, 2, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 1, 2, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 MoveBottomLeftHandler:
-SetWindowByGrid(G_ActiveWindow, 2, 1, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 2, 1, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 MoveBottomRightHandler:
-SetWindowByGrid(G_ActiveWindow, 2, 2, 2, 2, G_GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 2, 2, 2, 2, G_UserConfig.GridGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
@@ -342,7 +346,7 @@ GetIconIndex(iconName)
 			return index
 		}
 	}
-	
+
 	return 0
 }
 
@@ -421,13 +425,7 @@ ShowMenu(theWindow)
 		Menu, WindowMenu, Disable, %G_RestoreDesktopIconsMenuTitle%
 	}
 	
-	try
-	{
-		Menu, WindowMenu, Icon, 1&, %processPath%, 0
-	}
-	catch e
-	{
-	}
+	try Menu, WindowMenu, Icon, 1&, %processPath%, 0
 	
 	; Enable / Disable as appropriate
 	if (IsWindowTopMost(theWindow.WindowHandle))
