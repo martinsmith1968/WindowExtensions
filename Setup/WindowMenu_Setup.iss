@@ -1,19 +1,27 @@
+#define AppName "WindowExtensions"
+#define AppTitle "Window Extensions"
+#define AppVersion "1.4.2"
+
 [Setup]
-AppName=WindowMenu
-AppVersion=1.0
-AppCopyright=Copyright © 2016 DNX Solutions Ltd
-DefaultDirName={pf}\DNXSolutions\WindowMenu
+AppName={#AppName}
+AppVersion={#AppVersion}
+AppCopyright=Copyright © 2019 DNX Solutions Ltd
+DefaultDirName={commonpf}\DNXSolutions\{#AppName}
 OutputDir=.
-OutputBaseFilename=WindowMenu_Setup
+OutputBaseFilename={#AppName}_Install_v{#AppVersion}
 AppendDefaultDirName=False
 DisableProgramGroupPage=yes
+PrivilegesRequired=lowest
 
 [Files]
-Source: "..\WindowMenu.exe"; DestDir: "{app}"
-Source: "..\WindowMenu.icl"; DestDir: "{app}"
+Source: "..\{#AppName}.exe"; DestDir: "{app}"
+Source: "..\{#AppName}.icl"; DestDir: "{app}"
 
 [Icons]
-Name: "{userstartup}\WindowMenu"; Filename: "{app}\WindowMenu.exe"; Flags: excludefromshowinnewinstall; Tasks: startup
+Name: "{userstartup}\{#AppTitle}"; Filename: "{app}\{#AppName}.exe"; Flags: excludefromshowinnewinstall; Tasks: startup
 
 [Tasks]
-Name: startup; Description: "Automatically start on login"; GroupDescription: "{cm:AdditionalIcons}"
+Name: "startup"; Description: "Automatically start on login"; GroupDescription: "{cm:AdditionalIcons}"
+
+[Run]
+Filename: "{app}\{#AppName}.exe"; Flags: postinstall skipifdoesntexist nowait runascurrentuser; Description: "Run {#AppTitle} now ?"
