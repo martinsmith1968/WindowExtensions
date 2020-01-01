@@ -27,7 +27,11 @@ A Configuration dialog, available from the tray icon, allows controlling some as
 
 Window Extensions has menu options dedicated to Optimum positioning.
 
-There are 5 or so menu items that position windows with increasing
+There are 5 or so menu items that position windows with increasing indentation. (Configurable)
+
+### Window Control
+
+There are options for moving windows to dedicated positions, centring, controlling transparency and even for spanning multiple monitors.
 
 ### Window Positions
 
