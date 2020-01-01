@@ -17,6 +17,10 @@ Selecting any of the entries applies to the target window, shown at the top of t
 
 ![Main Menu](Docs/MainMenu.png)
 
+A Configuration dialog, available from the tray icon, allows controlling some aspects of the functionality.
+
+![Configuration Dialog](Docs/ConfigurationDialog.png)
+
 ## Features
 
 ### Optimum Positioning
