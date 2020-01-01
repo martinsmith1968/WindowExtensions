@@ -31,7 +31,13 @@ There are 5 or so menu items that position windows with increasing indentation. 
 
 ### Window Control
 
-There are options for moving windows to dedicated positions, centring, controlling transparency and even for spanning multiple monitors.
+There are other options for controlling window positioning, eg:
+
+- Dedicated positions (Corners, columns, etc.)
+- Centring
+- Controlling transparency
+- Rolling up to just a title bar
+- Spanning multiple monitors if more than 1 monitor is available
 
 ### Window Positions
 
@@ -39,10 +45,14 @@ Window Extensions has the ability to save window positions and restore them on d
 
 This was originally intended as a remedy to the widely known Multi-Monitor bug in Windows that doesn't restore window positions when unlocking or activating /  deactivating monitors.
 
+Window positions are saved to a file in the Users data folder (E.g. %APPDATA%\Roaming\WindowExtensions)
+
 ### Desktop Icons
 
 Window Extensions has the ability to save desktop icon positions and restore them on demand.
 
 There are other tools available which are dedicated to this task, with perhaps more functionality. This feature was added to Window Extensions due to restrictions in being able to use these tools on some sites that I visit.
+
+Desktop Icon positions are saved to a file in the Users data folder (E.g. %APPDATA%\Roaming\WindowExtensions)
 
 ## [To Do](Docs/todo.md)
