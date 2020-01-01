@@ -157,6 +157,17 @@ menuIndex := AddWindowMenuItem("&Cancel", "NullHandler", "", menuIndex)
 ; for any reason:
 OnExit, ExitSub
 
+;--------------------------------------------------------------------------------
+; Apply Startup options ?
+if (G_UserConfig.RestoreDesktopIconsOnStartup)
+{
+	RestoreDesktopIcons()
+}
+if (G_UserConfig.RestoreWindowPositionsOnStartup)
+{
+	RestoreWindowPositions()
+}
+
 return  ; End of script's auto-execute section.
 
 ExitSub:

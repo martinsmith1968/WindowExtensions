@@ -8,18 +8,13 @@ SetBatchLines, 10ms
 SetTitleMatchMode, 2
 
 ;--------------------------------------------------------------------------------
-; ToDo
-; ====
-; Support other config value types
-
-;--------------------------------------------------------------------------------
 ; Initialisation
 AppName        := "WindowExtensions"
 AppTitle       := "Window Extensions"
 AppDescription := "Window Extensions Menu and HotKeys"
 AppNotes       := "Concise and consistent control over Window Positions. Right-click right half of Window Caption bar to invoke, or hit WinKey-W"
 AppURL         := "https://github.com/martinsmith1968/WindowExtensions"
-AppVersion     := "1.4.2.0"
+AppVersion     := "1.5.0.0"
 
 ;--------------------------------------------------------------------------------
 ; Setup Tray Menu
