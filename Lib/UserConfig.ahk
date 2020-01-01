@@ -31,6 +31,10 @@ class UserConfig
 					readValue := defaultValue
 				}
 			}
+			else if (type == "boolean")
+			{
+				readValue := (readValue) ? true : false
+			}
 		}
 		
 		return readValue

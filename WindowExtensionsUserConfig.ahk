@@ -6,6 +6,8 @@ DefaultCascadeGutterSize := 30
 DefaultColumnGutterSize := 5
 DefaultGridGutterSize := 5
 DefaultSpanMonitorGutterSize := 5
+DefaultRestoreDesktopIconsOnStartup := false
+DefaultWindowPositionsOnStartup := false
 
 	__New()
 	{
@@ -19,6 +21,8 @@ DefaultSpanMonitorGutterSize := 5
 		this.Properties.push("ColumnGutterSize")
 		this.Properties.push("GridGutterSize")
 		this.Properties.push("SpanMonitorGutterSize")
+		this.Properties.push("RestoreDesktopIconsOnStartup")
+		this.Properties.push("RestoreWindowPositionsOnStartup")
 	}
 	
 	CascadeGutterSize
@@ -62,6 +66,30 @@ DefaultSpanMonitorGutterSize := 5
 		get
 		{
 			return base.GetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultSpanMonitorGutterSize, "integer")
+		}
+		set
+		{
+			base.SetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	RestoreDesktopIconsOnStartup
+	{
+		get
+		{
+			return base.GetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultRestoreDesktopIconsOnStartup, "boolean")
+		}
+		set
+		{
+			base.SetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	RestoreWindowPositionsOnStartup
+	{
+		get
+		{
+			return base.GetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultWindowPositionsOnStartup, "boolean")
 		}
 		set
 		{
