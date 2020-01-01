@@ -1,6 +1,6 @@
-# WindowMenu
+# Window Extensions
 
-AutoHotKey Window Menu for fine grained control of positioning
+AutoHotKey Window Menu and Extensions for fine grained control of positioning
 
 ## Basic Usage:
 
@@ -17,12 +17,24 @@ Selecting any of the entries applies to the target window, shown at the top of t
 
 ![Main Menu](Docs/MainMenu.png)
 
-## Window Positions
+## Features
 
-// ToDo
+### Optimum Positioning
 
-## Desktop Icons
+Window Extensions has menu options dedicated to Optimum positioning.
 
-// ToDo
+There are 5 or so menu items that position windows with increasing
+
+### Window Positions
+
+Window Extensions has the ability to save window positions and restore them on demand.
+
+This was originally intended as a remedy to the widely known Multi-Monitor bug in Windows that doesn't restore window positions when unlocking or activating /  deactivating monitors.
+
+### Desktop Icons
+
+Window Extensions has the ability to save desktop icon positions and restore them on demand.
+
+There are other tools available which are dedicated to this task, with perhaps more functionality. This feature was added to Window Extensions due to restrictions in being able to use these tools on some sites that I visit.
 
 ## [To Do](Docs/todo.md)
