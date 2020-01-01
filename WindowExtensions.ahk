@@ -8,11 +8,6 @@ SetBatchLines, 10ms
 SetTitleMatchMode, 2
 
 ;--------------------------------------------------------------------------------
-; ToDo
-; ====
-; Support other config value types
-
-;--------------------------------------------------------------------------------
 ; Initialisation
 AppName        := "WindowExtensions"
 AppTitle       := "Window Extensions"
