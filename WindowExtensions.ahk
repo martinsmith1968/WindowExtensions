@@ -8,54 +8,121 @@ SetBatchLines, 10ms
 SetTitleMatchMode, 2
 
 ;--------------------------------------------------------------------------------
-; Initialisation
+; Application Details
 AppName        := "WindowExtensions"
 AppTitle       := "Window Extensions"
 AppDescription := "Window Extensions Menu and HotKeys"
 AppNotes       := "Concise and consistent control over Window Positions. Right-click right half of Window Caption bar to invoke, or hit WinKey-W"
 AppURL         := "https://github.com/martinsmith1968/WindowExtensions"
-AppVersion     := "1.5.0.0"
-
-;--------------------------------------------------------------------------------
-; Setup Tray Menu
-Menu, Tray, NoStandard
-Menu, Tray, Tip, %AppTitle%
-
-Menu, Tray, Add, Con&figure..., TrayConfigureHandler
-try Menu, Tray, Icon, Con&figure..., %A_ScriptFullPath%, 0
-Menu, Tray, Add
-Menu, Tray, Add, &About..., TrayAboutHandler
-Menu, Tray, Add
-Menu, Tray, Add, Exit, TrayExitHandler
+AppVersion     := "1.6.0.0"
 
 ;--------------------------------------------------------------------------------
 ; Includes
 #Include Lib\Logging.ahk
-#Include WindowExtensionsUserConfig.ahk
+LogInit()
 
 ;--------------------------------------------------------------------------------
-; Globals
-G_UserConfig := new WindowExtensionsUserConfig()
+; System Information
+SysGet, G_CaptionHeight, 4 ; SM_CYCAPTION
+SysGet, G_BorderHeight, 5 ; SM_CXBORDER
+SysGet, G_MenuDropAlignment, 40 ; SM_MENUDROPALIGNMENT
+SysGet, G_MonitorCount, MonitorCount
+SysGet, G_PrimaryMonitorIndex, MonitorPrimary
+
+SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
+IconLibraryFileName := ScriptFilePath . "\" . ScriptFileNameNoExt . ".icl"
+
+G_CaptionHitHeight := G_CaptionHeight + (G_BorderHeight * 2)
+G_LeftAlignedMenus := (G_MenuDropAlignment = 0)
+
+LogText("G_CaptionHeight: " G_CaptionHeight)
+LogText("G_BorderHeight: " G_BorderHeight)
+LogText("G_MonitorCount: " G_MonitorCount)
+LogText("G_PrimaryMonitorIndex: " G_PrimaryMonitorIndex)
+LogText("G_CaptionHitHeight: " G_CaptionHitHeight)
+LogText("G_LeftAlignedMenus: " G_LeftAlignedMenus)
+
+;--------------------------------------------------------------------------------
+; Globals Declarations
+G_UserConfig :=
+G_ActiveWindow :=
+G_CurrentMouse :=
+G_MenuTitle := AppTitle
+G_SaveWindowPositionsMenuTitle := ""
+G_RestoreWindowPositionsMenuTitle := ""
+G_SaveDesktopIconsMenuTitle := ""
+G_RestoreDesktopIconsMenuTitle := ""
+
+OnExit, ExitHandler
+
+;--------------------------------------------------------------------------------
+; Auto-Execute section
+OnInit()		; Perform module initialisation - not reliant on other modules
+InitGlobals()	; 
+OnStartup()		; Perform module startup - may rely on other modules Init
+
+return  ; End of script's auto-execute section.
+
+
+;--------------------------------------------------------------------------------
+; Exit Handler
+ExitHandler:
+OnExit()
+; Must do this for the OnExit subroutine to actually Exit the script.
+ExitApp
+
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
 
 ;--------------------------------------------------------------------------------
 ; Modules
+#Include TrayMenu.ahk
 #include WindowMenu.ahk
 #Include WindowHotKeys.ahk
 #Include WindowExtensionsUserConfigGui.ahk
 #Include AboutGui.ahk
 
-return
+;--------------------------------------------------------------------------------
+; Initialise global variables once everything else initialised
+InitGlobals()
+{
+	global G_UserConfig
+	
+	G_UserConfig := new WindowExtensionsUserConfig()
+}
 
 ;--------------------------------------------------------------------------------
-TrayExitHandler:
-ExitApp
+; Module initialisation
+OnInit()
+{
+	WindowExtensionsUserConfig_OnInit()
+	WindowPositions_OnInit()
+	DesktopIcons_OnInit()
+	WindowMenu_OnInit()
+	TrayMenu_OnInit()
+}
 
 ;--------------------------------------------------------------------------------
-TrayAboutHandler:
-ShowAbout()
-return
+; OnStartup event
+OnStartup()
+{
+	WindowExtensionsUserConfig_OnStartup()
+	WindowMenu_OnStartup()
+	TrayMenu_OnStartup()
+}
 
 ;--------------------------------------------------------------------------------
-TrayConfigureHandler:
-ShowUserConfig()
-return
+; OnExit event
+OnExit()
+{
+	WindowMenu_OnExit()
+}
+
+;--------------------------------------------------------------------------------
+; OnUserConfigUpdated event
+OnUserConfigUpdated()
+{
+	BuildWindowMenu()
+	BuildTrayMenu()
+}

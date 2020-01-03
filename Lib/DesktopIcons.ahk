@@ -15,15 +15,33 @@ global PAGE_READWRITE := 0x04
 global LVM_GETITEMCOUNT := 0x00001004, LVM_GETITEMPOSITION := 0x00001010, LVM_SETITEMPOSITION := 0x0000100F, WM_SETREDRAW := 0x000B
 
 ;--------------------------------------------------------------------------------
-; Configuration
-DesktopIconsBaseFileName := "DesktopIcons"
+; Globals
+DesktopIconsBaseFileName := ""
+
+;--------------------------------------------------------------------------------
+; Initialisation
+DesktopIcons_OnInit()
+{
+	global MEM_COMMIT
+	global PAGE_READWRITE
+	global LVM_GETITEMCOUNT
+	global DesktopIconsBaseFileName
+
+	MEM_COMMIT := 0x1000, MEM_RESERVE := 0x2000, MEM_RELEASE := 0x8000
+	PAGE_READWRITE := 0x04
+	LVM_GETITEMCOUNT := 0x00001004, LVM_GETITEMPOSITION := 0x00001010, LVM_SETITEMPOSITION := 0x0000100F, WM_SETREDRAW := 0x000B
+
+	DesktopIconsBaseFileName := "DesktopIcons"
+}
 
 ;--------------------------------------------------------------------------------
 HasSavedDesktopIconsFile(desktopSize)
 {
     fileName := GetDesktopIconsDataFileName(desktopSize)
     
-    return FileExist(fileName)
+    exists := FileExist(fileName)
+	
+	return (exists && exists != "X")
 }
 
 ;--------------------------------------------------------------------------------

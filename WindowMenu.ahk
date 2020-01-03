@@ -2,177 +2,197 @@
 #Include Lib\WindowObjects.ahk
 #Include Lib\StringUtils.ahk
 #Include Lib\ArrayUtils.ahk
+#Include Lib\MathUtils.ahk
+#Include Lib\MenuFunctions.ahk
 #Include Lib\WindowFunctions.ahk
 #Include Lib\WindowPositions.ahk
 #Include Lib\DesktopIcons.ahk
+#Include WindowExtensionsUserConfig.ahk
 
 ;--------------------------------------------------------------------------------
-; System Information
-SysGet, G_CaptionHeight, 4 ; SM_CYCAPTION
-SysGet, G_BorderHeight, 5 ; SM_CXBORDER
-SysGet, G_MenuDropAlignment, 40 ; SM_MENUDROPALIGNMENT
-SysGet, G_MonitorCount, MonitorCount
-SysGet, G_PrimaryMonitorIndex, MonitorPrimary
-
-G_CaptionHitHeight := G_CaptionHeight + (G_BorderHeight * 2)
-G_LeftAlignedMenus := (G_MenuDropAlignment = 0)
-
-LogText("G_CaptionHeight: " G_CaptionHeight)
-LogText("G_BorderHeight: " G_BorderHeight)
-LogText("G_MonitorCount: " G_MonitorCount)
-LogText("G_PrimaryMonitorIndex: " G_PrimaryMonitorIndex)
-LogText("G_CaptionHitHeight: " G_CaptionHitHeight)
-LogText("G_LeftAlignedMenus: " G_LeftAlignedMenus)
+; Globals
+IconLibrary := []
+WindowMenuName :=
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
-G_ActiveWindow :=
-G_CurrentMouse :=
-G_MenuTitle := AppTitle
-G_SaveWindowPositionsMenuTitle := ""
-G_RestoreWindowPositionsMenuTitle := ""
-G_SaveDesktopIconsMenuTitle := ""
-G_RestoreDesktopIconsMenuTitle := ""
+WindowMenu_OnInit()
+{
+	global WindowMenuName
+	
+	WindowMenuName := "WindowMenu"
+	BuildIconLibrary()
+}
 
-SplitPath A_ScriptFullPath, , ScriptFilePath, , ScriptFileNameNoExt
-IconLibraryFileName := ScriptFilePath . "\" . ScriptFileNameNoExt . ".icl"
+;--------------------------------------------------------------------------------
+; OnStartup
+WindowMenu_OnStartup()
+{
+	BuildWindowMenu()
+}
 
-IconIndexes := []
-IconIndexes.push("MONITOR_FIT")
-IconIndexes.push("MOVESIZE_COLUMN_CENTRE")
-IconIndexes.push("MOVESIZE_COLUMN_LEFT")
-IconIndexes.push("MOVESIZE_COLUMN_RIGHT")
-IconIndexes.push("MOVESIZE_COMMON_MEDIUM")
-IconIndexes.push("MOVESIZE_COMMON_OPTIMUM")
-IconIndexes.push("MOVESIZE_COMMON_SMALL")
-IconIndexes.push("MOVESIZE_COMMON_SUBOPTIMUM")
-IconIndexes.push("MOVESIZE_COMMON_TINY")
-IconIndexes.push("MOVE_CENTRE")
-IconIndexes.push("MOVE_CORNER_BOTTOMLEFT")
-IconIndexes.push("MOVE_CORNER_BOTTOMRIGHT")
-IconIndexes.push("MOVE_CORNER_TOPLEFT")
-IconIndexes.push("MOVE_CORNER_TOPRIGHT")
-IconIndexes.push("POSITION_TRANSPARENCY0")
-IconIndexes.push("POSITION_TRANSPARENCY25")
-IconIndexes.push("POSITION_TRANSPARENCY50")
-IconIndexes.push("POSITION_TRANSPARENCY75")
-IconIndexes.push("POSITION_ZORDER_SENDTOBACK")
-IconIndexes.push("POSITION_ZORDER_TOPMOSTOFF")
-IconIndexes.push("POSITION_ZORDER_TOPMOSTON")
-IconIndexes.push("POSITION_ZORDER_TOPMOSTTOGGLE")
-IconIndexes.push("SIZE_COMMON_ROLLUP")
-IconIndexes.push("MONITOR_SPAN_ALL")
-IconIndexes.push("MONITOR_SPAN_HEIGHT")
-IconIndexes.push("MONITOR_SPAN_WIDTH")
-IconIndexes.push("POSITION_RESTORE")
-IconIndexes.push("POSITION_SAVE")
-IconIndexes.push("DESKTOPICONS_RESTORE")
-IconIndexes.push("DESKTOPICONS_SAVE")
+;--------------------------------------------------------------------------------
+; OnExit
+WindowMenu_OnExit()
+{
+	RestoreRollupWindows()		; This line will unroll any rolled up windows if the script exits for any reason:
+}
 
 ;--------------------------------------------------------------------------------
 ; Build Menu
-menuIndex := 0
-
-Menu, WindowMenu, Add, %G_MenuTitle%, NullHandler
-menuIndex += 1
-Menu, WindowMenu, Icon, %G_MenuTitle%, Shell32.dll, 20
-menuIndex += 1
-
-; Standard Window Sizes
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("&Optimum Size", "OptimumSizeHandler", "MOVESIZE_COMMON_OPTIMUM", menuIndex)
-menuIndex := AddWindowMenuItem("Su&b-Optimum Size", "SubOptimumSizeHandler", "MOVESIZE_COMMON_SUBOPTIMUM", menuIndex)
-menuIndex := AddWindowMenuItem("M&edium Size", "MediumSizeHandler", "MOVESIZE_COMMON_MEDIUM", menuIndex)
-menuIndex := AddWindowMenuItem("Sma&ll Size", "SmallSizeHandler", "MOVESIZE_COMMON_SMALL", menuIndex)
-menuIndex := AddWindowMenuItem("T&iny Size", "TinySizeHandler", "MOVESIZE_COMMON_TINY", menuIndex)
-
-; Move to known columns of the Screen
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("&Left Column", "MoveColumnLeftHandler", "MOVESIZE_COLUMN_LEFT", menuIndex)
-menuIndex := AddWindowMenuItem("Ce&ntre Column", "MoveColumnCentreHandler", "MOVESIZE_COLUMN_CENTRE", menuIndex)
-menuIndex := AddWindowMenuItem("&Right Column", "MoveColumnRightHandler", "MOVESIZE_COLUMN_RIGHT", menuIndex)
-
-; Multi-Monitor spanning
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("&Fit Current Monitor", "SpanCurrentMonitorHandler", "MONITOR_FIT", menuIndex)
-if (G_MonitorCount > 1)
+BuildWindowMenu()
 {
-    menuIndex := AddWindowMenuItem("Span &Monitor Width", "SpanMonitorWidthHandler", "MONITOR_SPAN_WIDTH", menuIndex)
-    menuIndex := AddWindowMenuItem("Span &Monitor Height", "SpanMonitorHeightHandler", "MONITOR_SPAN_HEIGHT", menuIndex)
-    menuIndex := AddWindowMenuItem("Span &All Monitors", "SpanAllMonitorsHandler", "MONITOR_SPAN_ALL", menuIndex)
+	global G_UserConfig
+	global G_MonitorCount
+	global G_MenuTitle
+	global IconLibraryFileName
+	global MenuLocationWindowMenu
+	global WindowMenuName
+	
+	menuIndex := 0
+	
+	desktopSize := GetDesktopSize()
+
+	try Menu, %WindowMenuName%, DeleteAll
+	
+	menuIndex := AddMenuItem(WindowMenuName, G_MenuTitle, "NullHandler", menuIndex)
+	Menu, %WindowMenuName%, Icon, %G_MenuTitle%, Shell32.dll, 20
+
+	; Standard Window Sizes
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "&Optimum Size", "OptimumSizeHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COMMON_OPTIMUM"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Su&b-Optimum Size", "SubOptimumSizeHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COMMON_SUBOPTIMUM"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "M&edium Size", "MediumSizeHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COMMON_MEDIUM"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Sma&ll Size", "SmallSizeHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COMMON_SMALL"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "T&iny Size", "TinySizeHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COMMON_TINY"), menuIndex)
+
+	; Move to known columns of the Screen
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "&Left Column", "MoveColumnLeftHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COLUMN_LEFT"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Ce&ntre Column", "MoveColumnCentreHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COLUMN_CENTRE"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "&Right Column", "MoveColumnRightHandler", IconLibraryFileName, GetIconLibraryIndex("MOVESIZE_COLUMN_RIGHT"), menuIndex)
+
+	; Multi-Monitor spanning
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "&Fit Current Monitor", "SpanCurrentMonitorHandler", IconLibraryFileName, GetIconLibraryIndex("MONITOR_FIT"), menuIndex)
+	if (G_MonitorCount > 1)
+	{
+		menuIndex := AddMenuItemWithIcon(WindowMenuName, "Span &Monitor Width", "SpanMonitorWidthHandler", IconLibraryFileName, GetIconLibraryIndex("MONITOR_SPAN_WIDTH"), menuIndex)
+		menuIndex := AddMenuItemWithIcon(WindowMenuName, "Span &Monitor Height", "SpanMonitorHeightHandler", IconLibraryFileName, GetIconLibraryIndex("MONITOR_SPAN_HEIGHT"), menuIndex)
+		menuIndex := AddMenuItemWithIcon(WindowMenuName, "Span &All Monitors", "SpanAllMonitorsHandler", IconLibraryFileName, GetIconLibraryIndex("MONITOR_SPAN_ALL"), menuIndex)
+	}
+
+	; Window Positions
+	if (ContainsFlag(G_UserConfig.WindowPositionsMenuLocation, MenuLocationWindowMenu))
+	{
+		menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+
+		saveTitle := "Save Window &Positions (" . desktopSize.DimensionsText . ")"
+		menuIndex := AddMenuItemWithIcon(WindowMenuName, saveTitle, "SaveWindowPositionsHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_SAVE"), menuIndex)
+
+		restoreTitle := "Restore Window &Positions (" . desktopSize.DimensionsText . ")"
+		menuIndex := AddMenuItemWithIcon(WindowMenuName, restoreTitle, "RestoreWindowPositionsHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_RESTORE"), menuIndex)
+
+		restoreEnabled := HasSavedWindowPositionFile(desktopSize)
+		EnableMenuItem(WindowMenuName, restoreTitle, restoreEnabled)
+	}
+
+	; Move to Corners
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Move &Centre", "CentreHandler", IconLibraryFileName, GetIconLibraryIndex("MOVE_CENTRE"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Move &Top Left", "MoveTopLeftHandler", IconLibraryFileName, GetIconLibraryIndex("MOVE_CORNER_TOPLEFT"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Move &Top Right", "MoveTopRightHandler", IconLibraryFileName, GetIconLibraryIndex("MOVE_CORNER_TOPRIGHT"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Move &Bottom Left", "MoveBottomLeftHandler", IconLibraryFileName, GetIconLibraryIndex("MOVE_CORNER_BOTTOMLEFT"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Move &Bottom Right", "MoveBottomRightHandler", IconLibraryFileName, GetIconLibraryIndex("MOVE_CORNER_BOTTOMRIGHT"), menuIndex)
+
+	; Rollup
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Roll&up", "RollupHandler", IconLibraryFileName, GetIconLibraryIndex("SIZE_COMMON_ROLLUP"), menuIndex)
+
+	; Topmost handling
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Set Top&Most On", "TopmostSetHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_ZORDER_TOPMOSTON"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Set Top&Most Off", "TopmostUnsetHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_ZORDER_TOPMOSTOFF"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "&Toggle TopMost", "TopmostToggleHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_ZORDER_TOPMOSTTOGGLE"), menuIndex)
+
+	; Transparency
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Set Transparency &75%", "TransparencySet75Handler", IconLibraryFileName, GetIconLibraryIndex("POSITION_TRANSPARENCY75"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Set Transparency &50%", "TransparencySet50Handler", IconLibraryFileName, GetIconLibraryIndex("POSITION_TRANSPARENCY50"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Set Transparency &25%", "TransparencySet25Handler", IconLibraryFileName, GetIconLibraryIndex("POSITION_TRANSPARENCY25"), menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Set Transparency &0%", "TransparencySet0Handler", IconLibraryFileName, GetIconLibraryIndex("POSITION_TRANSPARENCY0"), menuIndex)
+
+	; Send to back
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Send to Bac&k", "SendToBackHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_ZORDER_SENDTOBACK"), menuIndex)
+
+	; Desktop Icons
+	if (ContainsFlag(G_UserConfig.DesktopIconsMenuLocation, MenuLocationWindowMenu))
+	{
+		menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+
+		saveTitle := "Save &Desktop Icons (" . desktopSize.DimensionsText . ")"
+		menuIndex := AddMenuItemWithIcon(WindowMenuName, saveTitle, "SaveDesktopIconsHandler", IconLibraryFileName, GetIconLibraryIndex("DESKTOPICONS_SAVE"), menuIndex)
+
+		restoreTitle := "Restore &Desktop Icons (" . desktopSize.DimensionsText . ")"
+		menuIndex := AddMenuItemWithIcon(WindowMenuName, restoreTitle, "RestoreDesktopIconsHandler", IconLibraryFileName, GetIconLibraryIndex("DESKTOPICONS_RESTORE"), menuIndex)
+
+		restoreEnabled := HasSavedDesktopIconsFile(desktopSize)
+		EnableMenuItem(WindowMenuName, restoreTitle, restoreEnabled)
+	}
+
+	; Cancel menu
+	menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
+	menuIndex := AddMenuItem(WindowMenuName, "&Cancel", "NullHandler", menuIndex)
 }
-
-; Window Positions
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-
-G_SaveWindowPositionsMenuTitle := "Save Window &Positions"
-menuIndex := AddWindowMenuItem(G_SaveWindowPositionsMenuTitle, "SaveWindowPositionsHandler", "POSITION_SAVE", menuIndex)
-
-G_RestoreWindowPositionsMenuTitle := "Restore Window &Positions"
-menuIndex := AddWindowMenuItem(G_RestoreWindowPositionsMenuTitle, "RestoreWindowPositionsHandler", "POSITION_RESTORE", menuIndex)
-
-; Move to Corners
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("Move &Centre", "CentreHandler", "MOVE_CENTRE", menuIndex)
-menuIndex := AddWindowMenuItem("Move &Top Left", "MoveTopLeftHandler", "MOVE_CORNER_TOPLEFT", menuIndex)
-menuIndex := AddWindowMenuItem("Move &Top Right", "MoveTopRightHandler", "MOVE_CORNER_TOPRIGHT", menuIndex)
-menuIndex := AddWindowMenuItem("Move &Bottom Left", "MoveBottomLeftHandler", "MOVE_CORNER_BOTTOMLEFT", menuIndex)
-menuIndex := AddWindowMenuItem("Move &Bottom Right", "MoveBottomRightHandler", "MOVE_CORNER_BOTTOMRIGHT", menuIndex)
-
-; Rollup
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("Roll&up", "RollupHandler", "SIZE_COMMON_ROLLUP", menuIndex)
-
-; Topmost handling
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("Set Top&Most On", "TopmostSetHandler", "POSITION_ZORDER_TOPMOSTON", menuIndex)
-menuIndex := AddWindowMenuItem("Set Top&Most Off", "TopmostUnsetHandler", "POSITION_ZORDER_TOPMOSTOFF", menuIndex)
-menuIndex := AddWindowMenuItem("&Toggle TopMost", "TopmostToggleHandler", "POSITION_ZORDER_TOPMOSTTOGGLE", menuIndex)
-
-; Transparency
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("Set Transparency &75%", "TransparencySet75Handler", "POSITION_TRANSPARENCY75", menuIndex)
-menuIndex := AddWindowMenuItem("Set Transparency &50%", "TransparencySet50Handler", "POSITION_TRANSPARENCY50", menuIndex)
-menuIndex := AddWindowMenuItem("Set Transparency &25%", "TransparencySet25Handler", "POSITION_TRANSPARENCY25", menuIndex)
-menuIndex := AddWindowMenuItem("Set Transparency &0%", "TransparencySet0Handler", "POSITION_TRANSPARENCY0", menuIndex)
-
-; Send to back
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("Send to Bac&k", "SendToBackHandler", "POSITION_ZORDER_SENDTOBACK", menuIndex)
-
-; Window Positions
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-
-G_SaveDesktopIconsMenuTitle := "Save &Desktop Icons"
-menuIndex := AddWindowMenuItem(G_SaveDesktopIconsMenuTitle, "SaveDesktopIconsHandler", "DESKTOPICONS_SAVE", menuIndex)
-
-G_RestoreDesktopIconsMenuTitle := "Restore &Desktop Icons"
-menuIndex := AddWindowMenuItem(G_RestoreDesktopIconsMenuTitle, "RestoreDesktopIconsHandler", "DESKTOPICONS_RESTORE", menuIndex)
-
-; Cancel menu
-menuIndex := AddWindowMenuItem("", "", "", menuIndex)
-menuIndex := AddWindowMenuItem("&Cancel", "NullHandler", "", menuIndex)
-
-; This line will unroll any rolled up windows if the script exits
-; for any reason:
-OnExit, ExitSub
 
 ;--------------------------------------------------------------------------------
-; Apply Startup options ?
-if (G_UserConfig.RestoreDesktopIconsOnStartup)
+; Build Icon Library
+BuildIconLibrary()
 {
-	RestoreDesktopIcons()
-}
-if (G_UserConfig.RestoreWindowPositionsOnStartup)
-{
-	RestoreWindowPositions()
+	global IconLibrary
+	
+	IconLibrary := []
+	IconLibrary.push("MONITOR_FIT")
+	IconLibrary.push("MOVESIZE_COLUMN_CENTRE")
+	IconLibrary.push("MOVESIZE_COLUMN_LEFT")
+	IconLibrary.push("MOVESIZE_COLUMN_RIGHT")
+	IconLibrary.push("MOVESIZE_COMMON_MEDIUM")
+	IconLibrary.push("MOVESIZE_COMMON_OPTIMUM")
+	IconLibrary.push("MOVESIZE_COMMON_SMALL")
+	IconLibrary.push("MOVESIZE_COMMON_SUBOPTIMUM")
+	IconLibrary.push("MOVESIZE_COMMON_TINY")
+	IconLibrary.push("MOVE_CENTRE")
+	IconLibrary.push("MOVE_CORNER_BOTTOMLEFT")
+	IconLibrary.push("MOVE_CORNER_BOTTOMRIGHT")
+	IconLibrary.push("MOVE_CORNER_TOPLEFT")
+	IconLibrary.push("MOVE_CORNER_TOPRIGHT")
+	IconLibrary.push("POSITION_TRANSPARENCY0")
+	IconLibrary.push("POSITION_TRANSPARENCY25")
+	IconLibrary.push("POSITION_TRANSPARENCY50")
+	IconLibrary.push("POSITION_TRANSPARENCY75")
+	IconLibrary.push("POSITION_ZORDER_SENDTOBACK")
+	IconLibrary.push("POSITION_ZORDER_TOPMOSTOFF")
+	IconLibrary.push("POSITION_ZORDER_TOPMOSTON")
+	IconLibrary.push("POSITION_ZORDER_TOPMOSTTOGGLE")
+	IconLibrary.push("SIZE_COMMON_ROLLUP")
+	IconLibrary.push("MONITOR_SPAN_ALL")
+	IconLibrary.push("MONITOR_SPAN_HEIGHT")
+	IconLibrary.push("MONITOR_SPAN_WIDTH")
+	IconLibrary.push("POSITION_RESTORE")
+	IconLibrary.push("POSITION_SAVE")
+	IconLibrary.push("DESKTOPICONS_RESTORE")
+	IconLibrary.push("DESKTOPICONS_SAVE")
 }
 
-return  ; End of script's auto-execute section.
-
-ExitSub:
-RestoreRollupWindows()
-ExitApp  ; Must do this for the OnExit subroutine to actually Exit the script.
+;--------------------------------------------------------------------------------
+; GetIconIndex - Find the array index of a named icon
+GetIconLibraryIndex(iconName)
+{
+	global IconLibrary
+	
+	return IndexOf(IconLibrary, iconName)
+}
 
 
 ;--------------------------------------------------------------------------------
@@ -320,138 +340,37 @@ NullHandler:
 return
 
 ;--------------------------------------------------------------------------------
-; AddWindowMenuItem - Add a Menu Item to the main Window Menu
-AddWindowMenuItem(text, handler, iconName, menuIndex := 0)
-{
-	global WindowMenu
-	global IconLibraryFileName
-	
-	If (text = "")
-	{
-		Menu, WindowMenu, Add
-	}
-	else
-	{
-		Menu, WindowMenu, Add, %text%, %handler%
-		
-		iconIndex := GetIconIndex(iconName)
-		if (iconIndex > 0)
-		{
-			Menu, WindowMenu, Icon, %text%,  %IconLibraryFileName%, %iconIndex%
-		}
-	}
-	
-	return menuIndex + 1
-}
-
-;--------------------------------------------------------------------------------
-; GetIconIndex - Find the array index of a named icon
-GetIconIndex(iconName)
-{
-	global IconIndexes
-	
-	for index, element in IconIndexes
-	{
-		If (element = iconName)
-		{
-			return index
-		}
-	}
-
-	return 0
-}
-
-;--------------------------------------------------------------------------------
 ; ShowMenu - Show the Window Control Menu
 ShowMenu(theWindow)
 {
 	global G_MenuTitle
-	global G_SaveWindowPositionsMenuTitle
-	global G_RestoreWindowPositionsMenuTitle
-	global G_SaveDesktopIconsMenuTitle
-	global G_RestoreDesktopIconsMenuTitle
+	global WindowMenuName
+	
+	BuildWindowMenu()
 	
 	; Build Window Details
 	newMenuTitle := theWindow.Title . " (" . theWindow.ProcessName . ") [" . theWindow.Left . ", " . theWindow.Top . ", " . theWindow.Width . ", " . theWindow.Height . "]"
-
-	processPath := theWindow.ProcessPath
 
 	; Change Menu MainTitle
 	if (newMenuTitle <> G_MenuTitle)
 	{
 		G_MenuTitle := newMenuTitle
-		Menu, WindowMenu, Rename, 1&,  %G_MenuTitle%
+		Menu, %WindowMenuName%, Rename, 1&,  %G_MenuTitle%
 	}
 	
-	; Configure Window Positions Menu
-	desktopSize := GetDesktopSize()
-	
-	title := "Save Window &Positions (" . desktopSize.DimensionsText . ")"
-	if (title <> G_SaveWindowPositionsMenuTitle)
-	{
-		Menu, WindowMenu, Rename, %G_SaveWindowPositionsMenuTitle%, %title%
-		G_SaveWindowPositionsMenuTitle := title
-		LogText("G_SaveWindowPositionsMenuTitle: " . G_SaveWindowPositionsMenuTitle)
-	}
-	
-	title := "Restore Window &Positions (" . desktopSize.DimensionsText . ")"
-	if (title <> G_RestoreWindowPositionsMenuTitle)
-	{
-		Menu, WindowMenu, Rename, %G_RestoreWindowPositionsMenuTitle%, %title%
-		G_RestoreWindowPositionsMenuTitle := title
-		LogText("G_RestoreWindowPositionsMenuTitle: " . G_RestoreWindowPositionsMenuTitle)
-	}
-	
-	title := "Save &Desktop Icons (" . desktopSize.DimensionsText . ")"
-	if (title <> G_SaveDesktopIconsMenuTitle)
-	{
-		Menu, WindowMenu, Rename, %G_SaveDesktopIconsMenuTitle%, %title%
-		G_SaveDesktopIconsMenuTitle := title
-		LogText("G_SaveDesktopIconsMenuTitle: " . G_SaveDesktopIconsMenuTitle)
-	}
-	
-	title := "Restore &Desktop Icons (" . desktopSize.DimensionsText . ")"
-	if (title <> G_RestoreDesktopIconsMenuTitle)
-	{
-		Menu, WindowMenu, Rename, %G_RestoreDesktopIconsMenuTitle%, %title%
-		G_RestoreDesktopIconsMenuTitle := title
-		LogText("G_RestoreDesktopIconsMenuTitle: " . G_RestoreDesktopIconsMenuTitle)
-	}
-	
-	If (HasSavedWindowPositionFile(desktopSize))
-	{
-		Menu, WindowMenu, Enable, %G_RestoreWindowPositionsMenuTitle%
-	}
-	else
-	{
-		Menu, WindowMenu, Disable, %G_RestoreWindowPositionsMenuTitle%
-	}
-	
-	If (HasSavedDesktopIconsFile(desktopSize))
-	{
-		Menu, WindowMenu, Enable, %G_RestoreDesktopIconsMenuTitle%
-	}
-	else
-	{
-		Menu, WindowMenu, Disable, %G_RestoreDesktopIconsMenuTitle%
-	}
-	
-	try Menu, WindowMenu, Icon, 1&, %processPath%, 0
+	processPath := theWindow.ProcessPath
+
+	try Menu, %WindowMenuName%, Icon, 1&, %processPath%, 0
 	
 	; Enable / Disable as appropriate
-	if (IsWindowTopMost(theWindow.WindowHandle))
-	{
-		Menu, WindowMenu, Disable, Set Top&Most On
-		Menu, WindowMenu, Enable, Set Top&Most Off
-	}
-	else
-	{
-		Menu, WindowMenu, Enable, Set Top&Most On
-		Menu, WindowMenu, Disable, Set Top&Most Off
-	}
+	enableTopMostOff := IsWindowTopMost(theWindow.WindowHandle)
+	enableTopMostOn := !enableTopMostOff
 	
+	EnableMenuItem(WindowMenuName, "Set Top&Most On", enableTopMostOn)
+	EnableMenuItem(WindowMenuName, "Set Top&Most Off", enableTopMostOff)
+
 	; Show Popup Menu
-	Menu, WindowMenu, Show
+	Menu, %WindowMenuName%, Show
 }
 
 ;--------------------------------------------------------------------------------
@@ -465,6 +384,7 @@ ShowMenu(theWindow)
 	G_CurrentMouse := New Coordinate(mouseX, mouseY)
 
 	ShowMenu(G_ActiveWindow)
+	
 	return
 
 ;--------------------------------------------------------------------------------

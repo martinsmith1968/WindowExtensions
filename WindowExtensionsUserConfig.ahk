@@ -1,5 +1,62 @@
 #Include Lib\UserConfig.ahk
 
+MenuLocationNone := 0
+MenuLocationWindowMenu := 1
+MenuLocationTrayMenu := 2
+MenuLocationAll := MenuLocationWindowMenu | MenuLocationTrayMenu
+
+MenuLocationItems := []
+
+MenuLocationValues := []
+
+;--------------------------------------------------------------------------------
+; Initialisation
+WindowExtensionsUserConfig_OnInit()
+{
+	global MenuLocationNone
+	global MenuLocationWindowMenu
+	global MenuLocationTrayMenu
+	global MenuLocationAll
+	
+	global MenuLocationItems
+	global MenuLocationValues
+
+	MenuLocationNone := 0
+	MenuLocationWindowMenu := 1
+	MenuLocationTrayMenu := 2
+	MenuLocationAll := MenuLocationWindowMenu | MenuLocationTrayMenu
+
+	MenuLocationItems := []
+	MenuLocationItems.push("None")
+	MenuLocationItems.push("Window Menu")
+	MenuLocationItems.push("Tray Menu")
+	MenuLocationItems.push("Both")
+
+	MenuLocationValues := []
+	MenuLocationValues.push(MenuLocationNone)
+	MenuLocationValues.push(MenuLocationWindowMenu)
+	MenuLocationValues.push(MenuLocationTrayMenu)
+	MenuLocationValues.push(MenuLocationAll)
+	
+	UserConfig_OnInit()
+}
+
+;--------------------------------------------------------------------------------
+; OnStartup
+WindowExtensionsUserConfig_OnStartup()
+{
+	global G_UserConfig
+	
+	if (G_UserConfig.RestoreDesktopIconsOnStartup)
+	{
+		RestoreDesktopIcons()
+	}
+	if (G_UserConfig.RestoreWindowPositionsOnStartup)
+	{
+		RestoreWindowPositions()
+	}
+}
+
 class WindowExtensionsUserConfig extends UserConfig
 {
 DefaultCascadeGutterSize := 30
@@ -7,11 +64,23 @@ DefaultColumnGutterSize := 5
 DefaultGridGutterSize := 5
 DefaultSpanMonitorGutterSize := 5
 DefaultRestoreDesktopIconsOnStartup := false
-DefaultWindowPositionsOnStartup := false
+DefaultRestoreWindowPositionsOnStartup := false
+DefaultWindowPositionsMenuLocation := 0
+DefaultDesktopIconsMenuLocation := 0
+
+	InitDefaults()
+	{
+		global MenuLocationTrayMenu
+		
+		this.DefaultWindowPositionsMenuLocation := MenuLocationTrayMenu
+		this.DefaultDesktopIconsMenuLocation := MenuLocationTrayMenu
+	}
 
 	__New()
 	{
 		global AppName
+		
+		this.InitDefaults()
 		
 		fileName := GetUserDataFileName(AppName . ".dat")
 		
@@ -23,6 +92,8 @@ DefaultWindowPositionsOnStartup := false
 		this.Properties.push("SpanMonitorGutterSize")
 		this.Properties.push("RestoreDesktopIconsOnStartup")
 		this.Properties.push("RestoreWindowPositionsOnStartup")
+		this.Properties.push("WindowPositionsMenuLocation")
+		this.Properties.push("DesktopIconsMenuLocation")
 	}
 	
 	CascadeGutterSize
@@ -89,7 +160,31 @@ DefaultWindowPositionsOnStartup := false
 	{
 		get
 		{
-			return base.GetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultWindowPositionsOnStartup, "boolean")
+			return base.GetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultRestoreWindowPositionsOnStartup, "boolean")
+		}
+		set
+		{
+			base.SetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	WindowPositionsMenuLocation
+	{
+		get
+		{
+			return base.GetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultWindowPositionsMenuLocation, "integer")
+		}
+		set
+		{
+			base.SetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	DesktopIconsMenuLocation
+	{
+		get
+		{
+			return base.GetValue("General", base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultDesktopIconsMenuLocation, "integer")
 		}
 		set
 		{

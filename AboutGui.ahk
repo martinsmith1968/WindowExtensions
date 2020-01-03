@@ -17,7 +17,7 @@ DestroyAboutGui()
 	Gui, About:Destroy
 }
 
-ShowAbout()
+ShowAboutGui()
 {
 	Global AppName, AppTitle, AppDescription, AppNotes, AppURL, AppVersion
 	

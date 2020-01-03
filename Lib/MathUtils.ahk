@@ -22,3 +22,8 @@ MaxOf(a, b)
 		return b
 	}
 }
+
+ContainsFlag(value, bitwiseFlag)
+{
+	return (bitwiseFlag > 0) && (value & bitwiseFlag) > 0
+}

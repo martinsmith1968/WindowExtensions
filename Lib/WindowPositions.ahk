@@ -8,15 +8,26 @@
 #Include Lib\PleasantNotify.ahk
 
 ;--------------------------------------------------------------------------------
-; Configuration
-WindowPositionsBaseFileName := "WindowPositions"
+; Globals
+WindowPositionsBaseFileName := ""
+
+;--------------------------------------------------------------------------------
+; Initialisation
+WindowPositions_OnInit()
+{
+    global WindowPositionsBaseFileName
+    
+    WindowPositionsBaseFileName := "WindowPositions"
+}
 
 ;--------------------------------------------------------------------------------
 HasSavedWindowPositionFile(desktopSize)
 {
     fileName := GetWindowPositionsDataFileName(desktopSize)
     
-    return FileExist(fileName)
+    exists := FileExist(fileName)
+    
+    return (exists && exists != "X")
 }
 
 ;--------------------------------------------------------------------------------

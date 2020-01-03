@@ -1,6 +1,16 @@
 #Include Lib\UserDataUtils.ahk
 #Include Lib\Logging.ahk
+#Include Lib\WindowPositions.ahk
 
+;--------------------------------------------------------------------------------
+; Initialisation
+UserConfig_OnInit()
+{
+	UserDataUtils_OnInit()
+}
+
+;--------------------------------------------------------------------------------
+; UserConfig base class
 class UserConfig
 {
 	Properties := []
@@ -16,14 +26,13 @@ class UserConfig
 	{
 		dataFileName := this.DataFileName
 		
-		LogText("Getting Value: [" . section . "]." . key . ", default:" . defaultValue)
+		LogText("Getting Value: [" . section . "]." . key . ", default: " . defaultValue)
 		IniRead, readValue, %dataFileName%, %section%, %key%, %defaultValue%
 		
 		LogText("Got Value: " . readValue)
 		
 		if (type <> "")
 		{
-			; TODO - Support other types
 			if (type = "integer")
 			{
 				if readValue is not integer
@@ -35,6 +44,7 @@ class UserConfig
 			{
 				readValue := (readValue) ? true : false
 			}
+			; TODO - Support other types as necessary
 		}
 		
 		return readValue
@@ -44,7 +54,7 @@ class UserConfig
 	{
 		dataFileName := this.DataFileName
 		
-		LogText("Setting Value: [" . section . "]." . key . ", value:" . value)
+		LogText("Setting Value: [" . section . "]." . key . ", value: " . value)
 		IniWrite, %value%, %dataFileName%, %section%, %key%
 	}
 	

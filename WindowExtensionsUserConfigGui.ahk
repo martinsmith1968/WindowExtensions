@@ -1,3 +1,5 @@
+#Include Lib/StringUtils.ahk
+#Include Lib/ArrayUtils.ahk
 #Include WindowExtensionsUserConfig.ahk
 
 cascadeGutterSize := 0
@@ -13,6 +15,11 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	global spanMonitorGutterSize
 	global restoreDesktopIconsOnStartup
 	global restoreWindowPositionsOnStartup
+	global desktopIconsMenuLocation
+	global windowPositionsMenuLocation
+	
+	global MenuLocationValues
+	global MenuLocationItems
 
 	cascadeGutterSize := windowExtensionsUserConfig.CascadeGutterSize
 	columnGutterSize := windowExtensionsUserConfig.ColumnGutterSize
@@ -20,6 +27,13 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	spanMonitorGutterSize := windowExtensionsUserConfig.SpanMonitorGutterSize
 	restoreDesktopIconsOnStartup := windowExtensionsUserConfig.RestoreDesktopIconsOnStartup ? 1 : 0
 	restoreWindowPositionsOnStartup := windowExtensionsUserConfig.RestoreWindowPositionsOnStartup ? 1 : 0
+	desktopIconsMenuLocation := windowExtensionsUserConfig.DesktopIconsMenuLocation
+	windowPositionsMenuLocation := windowExtensionsUserConfig.WindowPositionsMenuLocation
+	
+	desktopIconsMenuLocationChoice := IndexOf(MenuLocationValues, desktopIconsMenuLocation)
+	windowPositionsMenuLocationChoice := IndexOf(MenuLocationValues, windowPositionsMenuLocation)
+
+	menuLocationItemsText := JoinItems("|", MenuLocationItems)
 
 	Gui, Config:New, -SysMenu
 	Gui, Config:Add, Text,, Cascade Gutter Size:
@@ -28,6 +42,8 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	Gui, Config:Add, Text,, Span Monitor Gutter Size:
 	Gui, Config:Add, Text,, Restore Desktop Icons on Startup:
 	Gui, Config:Add, Text,, Restore Window Positions on Startup:
+	Gui, Config:Add, Text,, Save / Restore Window Positions Menu Location:
+	Gui, Config:Add, Text,, Save / Restore Desktop Icons Menu Location:
 	Gui, Config:Add, Edit, ym w80
 	Gui, Config:Add, UpDown, vcascadeGutterSize Range0-100, %cascadeGutterSize%
 	Gui, Config:Add, Edit, w80
@@ -38,16 +54,18 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	Gui, Config:Add, UpDown, vspanMonitorGutterSize Range0-100, %spanMonitorGutterSize%
 	Gui, Config:Add, Checkbox, vrestoreDesktopIconsOnStartup Checked%restoreDesktopIconsOnStartup%,
 	Gui, Config:Add, Checkbox, vrestoreWindowPositionsOnStartup Checked%restoreWindowPositionsOnStartup%, `n
-	Gui, Config:Add, Button, default x50 y180 w80, OK  ; The label ButtonOK (if it exists) will be run when the button is pressed.
-	Gui, Config:Add, Button, x140 y180 w80, Cancel ; The label ButtonCancel (if it exists) will be run when the button is pressed.
+	Gui, Config:Add, DropDownList, vwindowPositionsMenuLocation AltSubmit Choose%windowPositionsMenuLocationChoice%, %menuLocationItemsText%
+	Gui, Config:Add, DropDownList, vdesktopIconsMenuLocation AltSubmit Choose%desktopIconsMenuLocationChoice%, %menuLocationItemsText%
+	Gui, Config:Add, Button, default x240 y230 w80, OK  ; The label ButtonOK (if it exists) will be run when the button is pressed.
+	Gui, Config:Add, Button, x330 y230 w80, Cancel ; The label ButtonCancel (if it exists) will be run when the button is pressed.
 }
 
-DestroyConfigGui()
+DestroyUserConfigGui()
 {
 	Gui, Config:Destroy
 }
 
-ShowUserConfig()
+ShowUserConfigGui()
 {
 	global G_UserConfig
 	
@@ -58,19 +76,19 @@ ShowUserConfig()
 
 ConfigGuiEscape:
 {
-	DestroyConfigGui()
+	DestroyUserConfigGui()
 	return
 }
 
 ConfigGuiClose:
 {
-	DestroyConfigGui()
+	DestroyUserConfigGui()
 	return
 }
 
 ConfigButtonCancel:
 {
-	DestroyConfigGui()
+	DestroyUserConfigGui()
 	return
 }
 
@@ -80,6 +98,8 @@ ConfigButtonOK:
 	global columnGutterSize
 	global gridGutterSize
 	global spanMonitorGutterSize
+	
+	global MenuLocationValues
 
 	Gui, Config:Submit
 	
@@ -89,9 +109,12 @@ ConfigButtonOK:
 	G_UserConfig.SpanMonitorGutterSize := spanMonitorGutterSize
 	G_UserConfig.RestoreDesktopIconsOnStartup := restoreDesktopIconsOnStartup
 	G_UserConfig.RestoreWindowPositionsOnStartup := restoreWindowPositionsOnStartup
+	G_UserConfig.DesktopIconsMenuLocation := MenuLocationValues[desktopIconsMenuLocation]
+	G_UserConfig.WindowPositionsMenuLocation := MenuLocationValues[windowPositionsMenuLocation]
 	G_UserConfig.Save()
 	
-	DestroyConfigGui()
+	OnUserConfigUpdated()
+	
+	DestroyUserConfigGui()
 	return
 }	
-
