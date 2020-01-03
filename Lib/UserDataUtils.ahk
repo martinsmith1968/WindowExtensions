@@ -3,17 +3,29 @@
 #Include Lib\PathUtils.ahk
 
 ;--------------------------------------------------------------------------------
+; Globals
+UserDataPath := ""
+
+;--------------------------------------------------------------------------------
 ; Initialisation
-SplitPath A_ScriptFullPath, , , , AppName
+UserDataUtils_OnInit()
+{
+	global AppName
+	global UserDataPath
+	
+	SplitPath A_ScriptFullPath, , , , AppName
 
-UserDataPath := CombinePaths(A_AppData, AppName)
+	UserDataPath := CombinePaths(A_AppData, AppName)
 
-If !DirectoryExists(UserDataPath)
-{    
-    LogText("Creating UserDataPath: " . UserDataPath)
-    FileCreateDir, %UserDataPath%
+	If (!DirectoryExists(UserDataPath))
+	{    
+		LogText("Creating UserDataPath: " . UserDataPath)
+		FileCreateDir, %UserDataPath%
+	}
 }
 
+;--------------------------------------------------------------------------------
+; GetUserDataFileName : Build an appropriate file name for the specified User data
 GetUserDataFileName(dataFileName)
 {
 	global UserDataPath
