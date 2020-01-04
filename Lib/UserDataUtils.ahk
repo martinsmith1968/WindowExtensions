@@ -1,6 +1,6 @@
 #Include Lib\Logging.ahk
 #Include Lib\StringUtils.ahk
-#Include Lib\PathUtils.ahk
+#Include Lib\IOUtils.ahk
 
 ;--------------------------------------------------------------------------------
 ; Globals
@@ -17,7 +17,7 @@ UserDataUtils_OnInit()
 
 	UserDataPath := CombinePaths(A_AppData, AppName)
 
-	If (!DirectoryExists(UserDataPath))
+	If (!FolderExists(UserDataPath))
 	{    
 		LogText("Creating UserDataPath: " . UserDataPath)
 		FileCreateDir, %UserDataPath%
