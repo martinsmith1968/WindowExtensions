@@ -1,6 +1,6 @@
 #Include Lib\Logging.ahk
 #Include Lib\StringUtils.ahk
-#Include Lib\PathUtils.ahk
+#Include Lib\IOUtils.ahk
 #Include Lib\WindowObjects.ahk
 #Include Lib\MathUtils.ahk
 #Include Lib\UserDataUtils.ahk
@@ -39,9 +39,7 @@ HasSavedDesktopIconsFile(desktopSize)
 {
     fileName := GetDesktopIconsDataFileName(desktopSize)
     
-    exists := FileExist(fileName)
-	
-	return (exists && exists != "X")
+    return FileExists(fileName)
 }
 
 ;--------------------------------------------------------------------------------
@@ -167,7 +165,7 @@ SaveDesktopIcons()
 	
     fileName := GetDesktopIconsDataFileName(desktopSize)
     
-    If FileExist(fileName)
+    If (FileExists(fileName))
     {
         LogText("Removing old Data File: " . fileName)
         FileDelete , %fileName%
@@ -208,7 +206,7 @@ RestoreDesktopIcons()
     
     fileName := GetDesktopIconsDataFileName(desktopSize)
     
-    If !FileExist(fileName)
+    If (!FileExists(fileName))
     {
         MsgBox , 48, Restore Desktop Icons, Unable to locate file %fileName%
         return
