@@ -12,9 +12,10 @@ SetTitleMatchMode, 2
 AppName        := "WindowExtensions"
 AppTitle       := "Window Extensions"
 AppDescription := "Window Extensions Menu and HotKeys"
+AppCopyright   := "Copyright © 2020 Martin Smith"
 AppNotes       := "Concise and consistent control over Window Positions. Right-click right half of Window Caption bar to invoke, or hit WinKey-W"
 AppURL         := "https://github.com/martinsmith1968/WindowExtensions"
-AppVersion     := "1.6.0.0"
+AppVersion     := "1.6.1.0"
 
 ;--------------------------------------------------------------------------------
 ; Includes
@@ -48,10 +49,6 @@ G_UserConfig :=
 G_ActiveWindow :=
 G_CurrentMouse :=
 G_MenuTitle := AppTitle
-G_SaveWindowPositionsMenuTitle := ""
-G_RestoreWindowPositionsMenuTitle := ""
-G_SaveDesktopIconsMenuTitle := ""
-G_RestoreDesktopIconsMenuTitle := ""
 
 OnExit, ExitHandler
 

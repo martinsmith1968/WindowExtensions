@@ -1,11 +1,11 @@
 #define AppName "WindowExtensions"
 #define AppTitle "Window Extensions"
-#define AppVersion "1.6.0"
+#define AppVersion "1.6.1"
 
 [Setup]
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppCopyright=Copyright © 2019 DNX Solutions Ltd
+AppCopyright=Copyright © 2020 Martin Smith
 DefaultDirName={commonpf}\DNXSolutions\{#AppName}
 OutputDir=.
 OutputBaseFilename={#AppName}_Install_v{#AppVersion}

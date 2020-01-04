@@ -17,6 +17,7 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	global restoreWindowPositionsOnStartup
 	global desktopIconsMenuLocation
 	global windowPositionsMenuLocation
+	global windowPositionsIncludeOffScreenWindows
 	
 	global MenuLocationValues
 	global MenuLocationItems
@@ -29,6 +30,7 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	restoreWindowPositionsOnStartup := windowExtensionsUserConfig.RestoreWindowPositionsOnStartup ? 1 : 0
 	desktopIconsMenuLocation := windowExtensionsUserConfig.DesktopIconsMenuLocation
 	windowPositionsMenuLocation := windowExtensionsUserConfig.WindowPositionsMenuLocation
+	windowPositionsIncludeOffScreenWindows := windowExtensionsUserConfig.WindowPositions_IncludeOffScreenWindows ? 1 : 0
 	
 	desktopIconsMenuLocationChoice := IndexOf(MenuLocationValues, desktopIconsMenuLocation)
 	windowPositionsMenuLocationChoice := IndexOf(MenuLocationValues, windowPositionsMenuLocation)
@@ -44,6 +46,7 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	Gui, Config:Add, Text,, Restore Window Positions on Startup:
 	Gui, Config:Add, Text,, Save / Restore Window Positions Menu Location:
 	Gui, Config:Add, Text,, Save / Restore Desktop Icons Menu Location:
+	Gui, Config:Add, Text,, Include Off-Screen Windows on Save / Restore:
 	Gui, Config:Add, Edit, ym w80
 	Gui, Config:Add, UpDown, vcascadeGutterSize Range0-100, %cascadeGutterSize%
 	Gui, Config:Add, Edit, w80
@@ -52,12 +55,13 @@ BuildUserConfigGui(windowExtensionsUserConfig)
 	Gui, Config:Add, UpDown, vgridGutterSize Range0-100, %gridGutterSize%
 	Gui, Config:Add, Edit, w80
 	Gui, Config:Add, UpDown, vspanMonitorGutterSize Range0-100, %spanMonitorGutterSize%
-	Gui, Config:Add, Checkbox, vrestoreDesktopIconsOnStartup Checked%restoreDesktopIconsOnStartup%,
+	Gui, Config:Add, Checkbox, vrestoreDesktopIconsOnStartup Checked%restoreDesktopIconsOnStartup%
 	Gui, Config:Add, Checkbox, vrestoreWindowPositionsOnStartup Checked%restoreWindowPositionsOnStartup%, `n
 	Gui, Config:Add, DropDownList, vwindowPositionsMenuLocation AltSubmit Choose%windowPositionsMenuLocationChoice%, %menuLocationItemsText%
 	Gui, Config:Add, DropDownList, vdesktopIconsMenuLocation AltSubmit Choose%desktopIconsMenuLocationChoice%, %menuLocationItemsText%
-	Gui, Config:Add, Button, default x240 y230 w80, OK  ; The label ButtonOK (if it exists) will be run when the button is pressed.
-	Gui, Config:Add, Button, x330 y230 w80, Cancel ; The label ButtonCancel (if it exists) will be run when the button is pressed.
+	Gui, Config:Add, Checkbox, vwindowPositionsIncludeOffScreenWindows x257 y223 Checked%windowPositionsIncludeOffScreenWindows%
+	Gui, Config:Add, Button, default x245 y245 w80, OK  ; The label ButtonOK (if it exists) will be run when the button is pressed.
+	Gui, Config:Add, Button, x330 y245 w80, Cancel ; The label ButtonCancel (if it exists) will be run when the button is pressed.
 }
 
 DestroyUserConfigGui()
@@ -98,8 +102,10 @@ ConfigButtonOK:
 	global columnGutterSize
 	global gridGutterSize
 	global spanMonitorGutterSize
-	
+	global restoreDesktopIconsOnStartup
+	global restoreWindowPositionsOnStartup
 	global MenuLocationValues
+	global windowPositionsIncludeOffScreenWindows
 
 	Gui, Config:Submit
 	
@@ -111,6 +117,7 @@ ConfigButtonOK:
 	G_UserConfig.RestoreWindowPositionsOnStartup := restoreWindowPositionsOnStartup
 	G_UserConfig.DesktopIconsMenuLocation := MenuLocationValues[desktopIconsMenuLocation]
 	G_UserConfig.WindowPositionsMenuLocation := MenuLocationValues[windowPositionsMenuLocation]
+	G_UserConfig.WindowPositions_IncludeOffScreenWindows := windowPositionsIncludeOffScreenWindows
 	G_UserConfig.Save()
 	
 	OnUserConfigUpdated()

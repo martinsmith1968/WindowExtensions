@@ -1,9 +1,10 @@
 #Include Lib\Logging.ahk
 #Include Lib\StringUtils.ahk
-#Include Lib\PathUtils.ahk
+#Include Lib\IOUtils.ahk
 #Include Lib\WindowObjects.ahk
 #Include Lib\WindowFunctions.ahk
 #Include Lib\MathUtils.ahk
+#Include Lib\IOUtils.ahk
 #Include Lib\UserDataUtils.ahk
 #Include Lib\PleasantNotify.ahk
 
@@ -21,16 +22,16 @@ WindowPositions_OnInit()
 }
 
 ;--------------------------------------------------------------------------------
+; HasSavedWindowPositionFile - Is there a file of saved Window Positions
 HasSavedWindowPositionFile(desktopSize)
 {
     fileName := GetWindowPositionsDataFileName(desktopSize)
     
-    exists := FileExist(fileName)
-    
-    return (exists && exists != "X")
+    return FileExists(fileName)
 }
 
 ;--------------------------------------------------------------------------------
+; GetWindowPositionsDataFileName - Get the appropriate saved Window Positions filename
 GetWindowPositionsDataFileName(desktopSize)
 {
     global WindowPositionsBaseFileName
@@ -51,6 +52,7 @@ GetWindowPositionsDataFileName(desktopSize)
 }
 
 ;--------------------------------------------------------------------------------
+; BuildWindowFromDefinition - Build a Window Definition from a text string
 BuildWindowFromDefinition(text, separator = "|")
 {
     parts := StrSplit(text, separator)
@@ -69,6 +71,7 @@ BuildWindowFromDefinition(text, separator = "|")
 }
 
 ;--------------------------------------------------------------------------------
+; GetWindowDefinition - Create a text representation of a Window Definition
 GetWindowDefinition(window, separator = "|")
 {
     parts := []
@@ -88,6 +91,7 @@ GetWindowDefinition(window, separator = "|")
 }    
 
 ;--------------------------------------------------------------------------------
+; HasWindowMoved - Check two window positions are equivalent
 HasWindowMoved(window1, window2)
 {
     if (window1.Left <> window2.Left)
@@ -105,13 +109,14 @@ HasWindowMoved(window1, window2)
 }
 
 ;--------------------------------------------------------------------------------
-SaveWindowPositions()
+; SaveWindowPositions - Save all the current window positions to a file
+SaveWindowPositions(includeOffScreenWindows)
 {
     desktopSize := GetDesktopSize()
     
     fileName := GetWindowPositionsDataFileName(desktopSize)
     
-    If FileExist(fileName)
+    If (FileExists(fileName))
     {
         LogText("Removing old Data File: " . fileName)
         FileDelete , %fileName%
@@ -128,6 +133,17 @@ SaveWindowPositions()
         LogText(A_Index . ": " . window.Description)
 
         isVisible := IsWindowVisible(windowHandle)
+        if (!isVisible)
+        {
+            LogText("Ignoring InVisible: " . window.Description)
+            continue
+        }
+        isOnScreen := IsWindowOnScreen(windowHandle)
+        if (!isOnScreen && !includeOffScreenWindows)
+        {
+            LogText("Ignoring Off-Screen: " . window.Description)
+            continue
+        }
 
         restored := GetWindowNormalPosition(windowHandle)
         if (!restored.IsValid)
@@ -168,13 +184,14 @@ SaveWindowPositions()
 }
 
 ;--------------------------------------------------------------------------------
-RestoreWindowPositions()
+; RestoreWindowPositions - Restores window positions from a file
+RestoreWindowPositions(includeOffScreenWindows)
 {
     desktopSize := GetDesktopSize()
     
     fileName := GetWindowPositionsDataFileName(desktopSize)
     
-    If !FileExist(fileName)
+    If (!FileExists(fileName))
     {
         MsgBox , 48, Restore Window Positions, Unable to locate file %fileName%
         return
@@ -188,10 +205,16 @@ RestoreWindowPositions()
             break
         
         savedWindow := BuildWindowFromDefinition(A_LoopReadLine)
-        if savedWindow
+        if (!savedWindow)
+            continue
+        
+        if (!IsRectOnScreen(savedWindow) && !includeOffScreenWindows)
         {
-            savedWindows.Push(savedWindow)
+            LogText("Ignoring Off-Screen: " . savedWindow.Description)
+            continue
         }
+
+        savedWindows.Push(savedWindow)
     }
 
     restoreCount := 0

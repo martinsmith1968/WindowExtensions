@@ -58,6 +58,24 @@ class UserConfig
 		IniWrite, %value%, %dataFileName%, %section%, %key%
 	}
 	
+	GetSectionNameFromFunc(func, defaultName := "General")
+	{
+		bits := StrSplit(func, ".")
+		
+		sectionName := bits[2]
+		
+		if (sectionName =)
+			sectionName := func
+		
+		nameParts := StrSplit(sectionName, "_")
+		if (nameParts.length() > 1)
+			sectionName := nameParts[1]
+		else
+			sectionName := defaultName
+		
+		return sectionName
+	}
+	
 	GetPropertyNameFromFunc(func)
 	{
 		bits := StrSplit(func, ".")
@@ -66,6 +84,10 @@ class UserConfig
 		
 		if (propertyName =)
 			propertyName := func
+		
+		nameParts := StrSplit(propertyName, "_")
+		if (nameParts.length() > 1)
+			propertyName := nameParts[2]
 		
 		return propertyName
 	}

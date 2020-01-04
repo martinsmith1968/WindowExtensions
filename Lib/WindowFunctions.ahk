@@ -212,6 +212,40 @@ IsWindowVisible(windowHandle)
 }
 
 ;--------------------------------------------------------------------------------
+; IsWindowOnScreen - Detect if a window handle is showing on any monitor
+IsWindowOnScreen(windowHandle)
+{
+	WinGetPos, left, top, width, height, ahk_id %windowHandle%
+	
+	rect := new Rectangle(left, top, width, height)
+	
+	return IsRectOnScreen(rect)
+}
+
+;--------------------------------------------------------------------------------
+; IsRectOnScreen - Detect if a rectangle is within any monitor
+IsRectOnScreen(rect)
+{
+	monitorIndex := GetMonitorIndexAt(rect.Left, rect.Top)
+	if (monitorIndex >= 0)
+		return true
+	
+	monitorIndex := GetMonitorIndexAt(rect.Left, rect.Bottom)
+	if (monitorIndex >= 0)
+		return true
+	
+	monitorIndex := GetMonitorIndexAt(rect.Right, rect.Top)
+	if (monitorIndex >= 0)
+		return true
+	
+	monitorIndex := GetMonitorIndexAt(rect.Right, rect.Bottom)
+	if (monitorIndex >= 0)
+		return true
+	
+	return false
+}
+
+;--------------------------------------------------------------------------------
 ; GetWindowNormalPosition - Get the restored position of a window
 GetWindowNormalPosition(windowHandle)
 {

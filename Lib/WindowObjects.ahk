@@ -250,6 +250,14 @@ Class Window extends Rectangle
 		}
 	}
 	
+	IsOnScreen
+	{
+		get
+		{
+			return IsWindowOnScreen(this.WindowHandle)
+		}
+	}
+	
 	MonitorIndex
 	{
 		get
