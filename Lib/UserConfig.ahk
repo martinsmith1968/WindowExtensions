@@ -1,5 +1,5 @@
-#Include Lib\UserDataUtils.ahk
 #Include Lib\Logging.ahk
+#Include Lib\UserDataUtils.ahk
 #Include Lib\WindowPositions.ahk
 
 ;--------------------------------------------------------------------------------
@@ -13,8 +13,9 @@ UserConfig_OnInit()
 ; UserConfig base class
 class UserConfig
 {
-	Properties := []
 	DataFileName :=
+	Properties := []
+	ObsoleteProperties := []
 
 	__New(fileName)
 	{
@@ -60,9 +61,7 @@ class UserConfig
 	
 	GetSectionNameFromFunc(func, defaultName := "General")
 	{
-		bits := StrSplit(func, ".")
-		
-		sectionName := bits[2]
+		sectionName := Instr(func, ".") ? StrSplit(func, ".")[2] : func
 		
 		if (sectionName =)
 			sectionName := func
@@ -78,9 +77,7 @@ class UserConfig
 	
 	GetPropertyNameFromFunc(func)
 	{
-		bits := StrSplit(func, ".")
-		
-		propertyName := bits[2]
+		propertyName := Instr(func, ".") ? StrSplit(func, ".")[2] : func
 		
 		if (propertyName =)
 			propertyName := func
@@ -92,12 +89,24 @@ class UserConfig
 		return propertyName
 	}
 	
+	RemoveProperty(section, propertyName)
+	{
+		dataFileName := this.DataFileName
+		
+		LogText("Removing: [" . section . "]." . propertyName)
+		IniDelete, %dataFileName%, %section%, %propertyName%
+	}
+	
 	Save()
 	{
 		for index, propertyName in this.Properties
 		{
 			value := this[propertyName]
 			this[propertyName] := value
+		}
+		for index, propertyName in this.ObsoleteProperties
+		{
+			this.RemoveProperty(this.GetSectionNameFromFunc(propertyName), this.GetPropertyNameFromFunc(propertyName))
 		}
 	}
 }
