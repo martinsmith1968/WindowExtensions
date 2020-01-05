@@ -1,6 +1,6 @@
 #define AppName "WindowExtensions"
 #define AppTitle "Window Extensions"
-#define AppVersion "1.6.1"
+#define AppVersion "1.6.2"
 
 [Setup]
 AppName={#AppName}

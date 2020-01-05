@@ -15,7 +15,7 @@ AppDescription := "Window Extensions Menu and HotKeys"
 AppCopyright   := "Copyright © 2020 Martin Smith"
 AppNotes       := "Concise and consistent control over Window Positions. Right-click right half of Window Caption bar to invoke, or hit WinKey-W"
 AppURL         := "https://github.com/martinsmith1968/WindowExtensions"
-AppVersion     := "1.6.1.0"
+AppVersion     := "1.6.2.0"
 
 ;--------------------------------------------------------------------------------
 ; Includes
@@ -54,7 +54,7 @@ OnExit, ExitHandler
 
 ;--------------------------------------------------------------------------------
 ; Auto-Execute section
-OnInit()		; Perform module initialisation - not reliant on other modules
+OnInit()		; Perform module initialisation - not reliant on other modules or globals
 InitGlobals()	; 
 OnStartup()		; Perform module startup - may rely on other modules Init
 
@@ -64,7 +64,9 @@ return  ; End of script's auto-execute section.
 ;--------------------------------------------------------------------------------
 ; Exit Handler
 ExitHandler:
+LogText("Raising OnExit...")
 OnExit()
+LogText("Exiting...")
 ; Must do this for the OnExit subroutine to actually Exit the script.
 ExitApp
 
