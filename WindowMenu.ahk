@@ -83,7 +83,7 @@ BuildWindowMenu()
 	}
 
 	; Window Positions
-	if (ContainsFlag(G_UserConfig.WindowPositionsMenuLocation, MenuLocationWindowMenu))
+	if (ContainsFlag(G_UserConfig.MenuControl_WindowPositionsMenuLocation, MenuLocationWindowMenu))
 	{
 		menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
 
@@ -127,7 +127,7 @@ BuildWindowMenu()
 	menuIndex := AddMenuItemWithIcon(WindowMenuName, "Send to Bac&k", "SendToBackHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_ZORDER_SENDTOBACK"), menuIndex)
 
 	; Desktop Icons
-	if (ContainsFlag(G_UserConfig.DesktopIconsMenuLocation, MenuLocationWindowMenu))
+	if (ContainsFlag(G_UserConfig.MenuControl_DesktopIconsMenuLocation, MenuLocationWindowMenu))
 	{
 		menuIndex := AddMenuItemSeparator(WindowMenuName, menuIndex)
 
@@ -201,59 +201,59 @@ GetIconLibraryIndex(iconName)
 
 ;--------------------------------------------------------------------------------
 OptimumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 1))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.General_CascadeGutterSize * 1))
 return
 
 SubOptimumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 2))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.General_CascadeGutterSize * 2))
 return
 
 MediumSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 3))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.General_CascadeGutterSize * 3))
 return
 
 SmallSizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 4))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.General_CascadeGutterSize * 4))
 return
 
 TinySizeHandler:
-SetWindowByGutter(G_ActiveWindow, (G_UserConfig.CascadeGutterSize * 5))
+SetWindowByGutter(G_ActiveWindow, (G_UserConfig.General_CascadeGutterSize * 5))
 return
 
 ;--------------------------------------------------------------------------------
 MoveColumnLeftHandler:
-SetWindowByColumn(G_ActiveWindow, 1, 3, G_UserConfig.ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 1, 3, G_UserConfig.General_ColumnGutterSize)
 return
 
 MoveColumnCentreHandler:
-SetWindowByColumn(G_ActiveWindow, 2, 3, G_UserConfig.ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 2, 3, G_UserConfig.General_ColumnGutterSize)
 return
 
 MoveColumnRightHandler:
-SetWindowByColumn(G_ActiveWindow, 3, 3, G_UserConfig.ColumnGutterSize)
+SetWindowByColumn(G_ActiveWindow, 3, 3, G_UserConfig.General_ColumnGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
 SpanCurrentMonitorHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, monitorWorkArea.Top, monitorWorkArea.Right, monitorWorkArea.Bottom, G_UserConfig.SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, monitorWorkArea.Top, monitorWorkArea.Right, monitorWorkArea.Bottom, G_UserConfig.General_SpanMonitorGutterSize)
 return
 
 SpanMonitorWidthHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, "", monitorWorkArea.Top, "", monitorWorkArea.Bottom, G_UserConfig.SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, "", monitorWorkArea.Top, "", monitorWorkArea.Bottom, G_UserConfig.General_SpanMonitorGutterSize)
 return
 
 SpanMonitorHeightHandler:
 monitor := new Monitor(G_ActiveWindow.MonitorIndex)
 monitorWorkArea := monitor.WorkArea
-SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, "", monitorWorkArea.Right, "", G_UserConfig.SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, monitorWorkArea.Left, "", monitorWorkArea.Right, "", G_UserConfig.General_SpanMonitorGutterSize)
 return
 
 SpanAllMonitorsHandler:
-SetWindowSpanMonitors(G_ActiveWindow, "", "", "", "", G_UserConfig.SpanMonitorGutterSize)
+SetWindowSpanMonitors(G_ActiveWindow, "", "", "", "", G_UserConfig.General_SpanMonitorGutterSize)
 return
 
 ;--------------------------------------------------------------------------------
@@ -271,19 +271,19 @@ SetWindowToCentre(G_ActiveWindow)
 return
 
 MoveTopLeftHandler:
-SetWindowByGrid(G_ActiveWindow, 1, 1, 2, 2, G_UserConfig.GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 1, 1, 2, 2, G_UserConfig.General_GridGutterSize)
 return
 
 MoveTopRightHandler:
-SetWindowByGrid(G_ActiveWindow, 1, 2, 2, 2, G_UserConfig.GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 1, 2, 2, 2, G_UserConfig.General_GridGutterSize)
 return
 
 MoveBottomLeftHandler:
-SetWindowByGrid(G_ActiveWindow, 2, 1, 2, 2, G_UserConfig.GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 2, 1, 2, 2, G_UserConfig.General_GridGutterSize)
 return
 
 MoveBottomRightHandler:
-SetWindowByGrid(G_ActiveWindow, 2, 2, 2, 2, G_UserConfig.GridGutterSize)
+SetWindowByGrid(G_ActiveWindow, 2, 2, 2, 2, G_UserConfig.General_GridGutterSize)
 return
 
 ;--------------------------------------------------------------------------------

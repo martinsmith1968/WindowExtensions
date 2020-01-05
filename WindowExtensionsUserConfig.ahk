@@ -47,34 +47,37 @@ WindowExtensionsUserConfig_OnStartup()
 {
 	global G_UserConfig
 	
-	if (G_UserConfig.RestoreDesktopIconsOnStartup)
+	if (G_UserConfig.Startup_RestoreDesktopIcons)
 	{
-		RestoreDesktopIcons()
+        RestoreDesktopIcons()
 	}
-	if (G_UserConfig.RestoreWindowPositionsOnStartup)
+	if (G_UserConfig.Startup_RestoreWindowPositions)
 	{
-		RestoreWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows)
+        RestoreWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows)
 	}
 }
 
 class WindowExtensionsUserConfig extends UserConfig
 {
-DefaultCascadeGutterSize := 30
-DefaultColumnGutterSize := 5
-DefaultGridGutterSize := 5
-DefaultSpanMonitorGutterSize := 5
-DefaultRestoreDesktopIconsOnStartup := false
-DefaultRestoreWindowPositionsOnStartup := false
-DefaultWindowPositionsMenuLocation := 2
-DefaultDesktopIconsMenuLocation := 2
-DefaultWindowPositions_IncludeOffScreenWindows := false
+Default_About_Version := ""
+Default_General_CascadeGutterSize := 30
+Default_General_ColumnGutterSize := 5
+Default_General_GridGutterSize := 5
+Default_General_SpanMonitorGutterSize := 5
+Default_Startup_RestoreDesktopIcons := false
+Default_Startup_RestoreWindowPositions := false
+Default_MenuControl_WindowPositionsMenuLocation := 0
+Default_MenuControl_DesktopIconsMenuLocation := 0
+Default_WindowPositions_IncludeOffScreenWindows := false
 
 	InitDefaults()
 	{
+		global AppVersion
 		global MenuLocationTrayMenu
 		
-		this.DefaultWindowPositionsMenuLocation := MenuLocationTrayMenu
-		this.DefaultDesktopIconsMenuLocation := MenuLocationTrayMenu
+		this.Default_About_Version := AppVersion
+		this.Default_MenuControl_WindowPositionsMenuLocation := MenuLocationTrayMenu
+		this.Default_MenuControl_DesktopIconsMenuLocation := MenuLocationTrayMenu
 	}
 
 	__New()
@@ -87,22 +90,40 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		
 		base.__New(fileName)
 		
-		this.Properties.push("CascadeGutterSize")
-		this.Properties.push("ColumnGutterSize")
-		this.Properties.push("GridGutterSize")
-		this.Properties.push("SpanMonitorGutterSize")
-		this.Properties.push("RestoreDesktopIconsOnStartup")
-		this.Properties.push("RestoreWindowPositionsOnStartup")
-		this.Properties.push("WindowPositionsMenuLocation")
-		this.Properties.push("DesktopIconsMenuLocation")
+		this.Properties.push("About_Version")
+		this.Properties.push("General_CascadeGutterSize")
+		this.Properties.push("General_ColumnGutterSize")
+		this.Properties.push("General_GridGutterSize")
+		this.Properties.push("General_SpanMonitorGutterSize")
+		this.Properties.push("Startup_RestoreDesktopIcons")
+		this.Properties.push("Startup_RestoreWindowPositions")
+		this.Properties.push("MenuControl_WindowPositionsMenuLocation")
+		this.Properties.push("MenuControl_DesktopIconsMenuLocation")
 		this.Properties.push("WindowPositions_IncludeOffScreenWindows")
+		
+		this.ObsoleteProperties.push("General_RestoreDesktopIconsOnStartup")
+		this.ObsoleteProperties.push("General_RestoreWindowPositionsOnStartup")
+		this.ObsoleteProperties.push("General_DesktopIconsMenuLocation")
+		this.ObsoleteProperties.push("General_WindowPositionsMenuLocation")
 	}
 	
-	CascadeGutterSize
+	About_Version
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultCascadeGutterSize, "integer")
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_General_CascadeGutterSize, "string")
+		}
+		set
+		{
+			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_About_Version)
+		}
+	}
+	
+	General_CascadeGutterSize
+	{
+		get
+		{
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_General_CascadeGutterSize, "integer")
 		}
 		set
 		{
@@ -110,11 +131,11 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		}
 	}
 	
-	ColumnGutterSize
+	General_ColumnGutterSize
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultColumnGutterSize, "integer")
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_General_ColumnGutterSize, "integer")
 		}
 		set
 		{
@@ -122,11 +143,11 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		}
 	}
 	
-	GridGutterSize
+	General_GridGutterSize
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultGridGutterSize, "integer")
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_General_GridGutterSize, "integer")
 		}
 		set
 		{
@@ -134,11 +155,11 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		}
 	}
 	
-	SpanMonitorGutterSize
+	General_SpanMonitorGutterSize
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultSpanMonitorGutterSize, "integer")
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_General_SpanMonitorGutterSize, "integer")
 		}
 		set
 		{
@@ -146,11 +167,13 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		}
 	}
 	
-	RestoreDesktopIconsOnStartup
+	Startup_RestoreDesktopIcons
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultRestoreDesktopIconsOnStartup, "boolean")
+			oldValue1 := base.GetValue("General", "RestoreDesktopIconsOnStartup", this.Default_Startup_RestoreDesktopIcons, "boolean")
+			
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), oldValue1, "boolean")
 		}
 		set
 		{
@@ -158,11 +181,13 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		}
 	}
 	
-	RestoreWindowPositionsOnStartup
+	Startup_RestoreWindowPositions
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultRestoreWindowPositionsOnStartup, "boolean")
+			oldValue1 := base.GetValue("General", "RestoreWindowPositionsOnStartup", this.Default_Startup_RestoreWindowPositions, "boolean")
+			
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), oldValue1, "boolean")
 		}
 		set
 		{
@@ -170,11 +195,13 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		}
 	}
 	
-	WindowPositionsMenuLocation
+	MenuControl_WindowPositionsMenuLocation
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultWindowPositionsMenuLocation, "integer")
+			oldValue1 := base.GetValue("General", "WindowPositionsMenuLocation", this.Default_MenuControl_WindowPositionsMenuLocation, "integer")
+			
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), oldValue1, "integer")
 		}
 		set
 		{
@@ -182,11 +209,13 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 		}
 	}
 	
-	DesktopIconsMenuLocation
+	MenuControl_DesktopIconsMenuLocation
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultDesktopIconsMenuLocation, "integer")
+			oldValue1 := base.GetValue("General", "DesktopIconsMenuLocation", this.Default_MenuControl_WindowPositionsMenuLocation, "integer")
+			
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), oldValue1, "integer")
 		}
 		set
 		{
@@ -198,7 +227,7 @@ DefaultWindowPositions_IncludeOffScreenWindows := false
 	{
 		get
 		{
-			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.DefaultWindowPositions_IncludeOffScreenWindows, "boolean")
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_WindowPositions_IncludeOffScreenWindows, "boolean")
 		}
 		set
 		{

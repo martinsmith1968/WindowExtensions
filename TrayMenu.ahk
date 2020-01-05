@@ -43,7 +43,7 @@ BuildTrayMenu()
 	menuIndex := AddMenuItemWithIcon(TrayMenuName, "Con&figure...", "TrayConfigureHandler", A_ScriptFullPath, 0, menuIndex)
 	
 	; Window Positions
-	if (ContainsFlag(G_UserConfig.WindowPositionsMenuLocation, MenuLocationTrayMenu))
+	if (ContainsFlag(G_UserConfig.MenuControl_WindowPositionsMenuLocation, MenuLocationTrayMenu))
 	{
 		menuIndex := AddMenuItemSeparator(TrayMenuName, menuIndex)
 
@@ -58,7 +58,7 @@ BuildTrayMenu()
 	}
 
 	; Desktop Icons
-	if (ContainsFlag(G_UserConfig.DesktopIconsMenuLocation, MenuLocationTrayMenu))
+	if (ContainsFlag(G_UserConfig.MenuControl_DesktopIconsMenuLocation, MenuLocationTrayMenu))
 	{
 		menuIndex := AddMenuItemSeparator(TrayMenuName, menuIndex)
 
@@ -81,7 +81,7 @@ BuildTrayMenu()
 
 ;--------------------------------------------------------------------------------
 TrayConfigureHandler:
-ShowUserConfigGui()
+ShowConfigGui()
 return
 
 ;--------------------------------------------------------------------------------
