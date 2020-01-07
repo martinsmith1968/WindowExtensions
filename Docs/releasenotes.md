@@ -1,6 +1,6 @@
 # Release Notes
 
-## v1.6.2 - 2020-01-05
+## v1.6.2 - 2020-01-07
 
 - Redesigned Configuration dialog to tabbed dialog
 - Reformatted user options data file to have values in appropriate sections
