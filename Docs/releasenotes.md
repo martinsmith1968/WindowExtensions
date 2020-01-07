@@ -1,5 +1,10 @@
 # Release Notes
 
+## v1.6.2 - 2020-01-05
+
+- Redesigned Configuration dialog to tabbed dialog
+- Reformatted user options data file to have values in appropriate sections
+
 ## v1.6.1 - 2020-01-04
 
 - Fixed issue with Restore Window Positions which would position Windows Settings screen when it wasn't visible before

@@ -19,7 +19,13 @@ Selecting any of the entries applies to the target window, shown at the top of t
 
 A Configuration dialog, available from the tray icon, allows controlling some aspects of the functionality.
 
-![Configuration Dialog](Docs/ConfigurationDialog.png)
+![Configuration Dialog Tab 1](Docs/ConfigurationDialog1.png)
+
+![Configuration Dialog Tab 2](Docs/ConfigurationDialog2.png)
+
+![Configuration Dialog Tab 3](Docs/ConfigurationDialog3.png)
+
+![Configuration Dialog Tab 4](Docs/ConfigurationDialog4.png)
 
 ## Features
 
