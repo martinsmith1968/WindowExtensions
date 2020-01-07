@@ -323,7 +323,7 @@ return
 
 ;--------------------------------------------------------------------------------
 SaveDesktopIconsHandler:
-SaveDesktopIcons()
+SaveDesktopIcons(true)
 return
 
 RestoreDesktopIconsHandler:
