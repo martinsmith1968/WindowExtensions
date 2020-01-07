@@ -258,7 +258,7 @@ return
 
 ;--------------------------------------------------------------------------------
 SaveWindowPositionsHandler:
-SaveWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows)
+SaveWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows, true)
 return
 
 RestoreWindowPositionsHandler:
