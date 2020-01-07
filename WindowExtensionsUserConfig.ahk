@@ -1,3 +1,4 @@
+#Include Lib\Logging.ahk
 #Include Lib\UserConfig.ahk
 
 MenuLocationNone := 0
@@ -8,6 +9,9 @@ MenuLocationAll := MenuLocationWindowMenu | MenuLocationTrayMenu
 MenuLocationItems := []
 
 MenuLocationValues := []
+
+WindowPositions_TimerEnabled := false
+WindowPositions_TimerIntervalMinutes := 0
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -20,6 +24,9 @@ WindowExtensionsUserConfig_OnInit()
 	
 	global MenuLocationItems
 	global MenuLocationValues
+
+	global WindowPositions_TimerEnabled
+	global WindowPositions_TimerIntervalMinutes
 
 	MenuLocationNone := 0
 	MenuLocationWindowMenu := 1
@@ -38,6 +45,9 @@ WindowExtensionsUserConfig_OnInit()
 	MenuLocationValues.push(MenuLocationTrayMenu)
 	MenuLocationValues.push(MenuLocationAll)
 	
+	WindowPositions_TimerEnabled := false
+	WindowPositions_TimerIntervalMinutes := 0
+	
 	UserConfig_OnInit()
 }
 
@@ -55,8 +65,56 @@ WindowExtensionsUserConfig_OnStartup()
 	{
         RestoreWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows)
 	}
+	
+	WindowExtensionsUserConfig_OnConfigUpdated()
 }
 
+;--------------------------------------------------------------------------------
+; OnConfigUpdated
+WindowExtensionsUserConfig_OnConfigUpdated()
+{
+	global G_UserConfig
+	
+	WindowPositionsConfigureTimer(G_UserConfig.WindowPositions_AutoSave, G_UserConfig.WindowPositions_AutoSaveIntervalMinutes)
+}
+
+;--------------------------------------------------------------------------------
+; WindowPositionsConfigureTimer - Configure the timer
+WindowPositionsConfigureTimer(enabled, intervalMinutes)
+{
+	global WindowPositions_TimerEnabled
+	global WindowPositions_TimerIntervalMinutes
+	
+	if (enabled = WindowPositions_TimerEnabled && intervalMinutes = WindowPositions_TimerIntervalMinutes)
+	{
+		return
+	}
+	
+	LogText("Deleting WindowPositionsAutoSave_OnTimer")
+	Try SetTimer, WindowPositionsAutoSave_OnTimer, Delete
+	
+	if (enabled)
+	{
+		milliseconds := (intervalMinutes * 60) * 1000
+		
+		LogText("Setting WindowPositionsAutoSave_OnTimer for : " . milliseconds)
+		SetTimer, WindowPositionsAutoSave_OnTimer, %milliseconds%
+	}
+}
+
+;--------------------------------------------------------------------------------
+; WindowPositionsAutoSave_OnTimer - Timer execute
+WindowPositionsAutoSave_OnTimer()
+{
+	global G_UserConfig
+	
+	LogText("Executing: " . A_ThisFunc)
+	
+	SaveWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows, G_UserConfig.WindowPositions_AutoSaveNotify)
+}
+
+;--------------------------------------------------------------------------------
+; WindowExtensionsUserConfig class
 class WindowExtensionsUserConfig extends UserConfig
 {
 Default_About_Version := ""
@@ -69,6 +127,9 @@ Default_Startup_RestoreWindowPositions := false
 Default_MenuControl_WindowPositionsMenuLocation := 0
 Default_MenuControl_DesktopIconsMenuLocation := 0
 Default_WindowPositions_IncludeOffScreenWindows := false
+Default_WindowPositions_AutoSave := false
+Default_WindowPositions_AutoSaveIntervalMinutes := 5
+Default_WindowPositions_AutoSaveNotify := false
 
 	InitDefaults()
 	{
@@ -100,6 +161,9 @@ Default_WindowPositions_IncludeOffScreenWindows := false
 		this.Properties.push("MenuControl_WindowPositionsMenuLocation")
 		this.Properties.push("MenuControl_DesktopIconsMenuLocation")
 		this.Properties.push("WindowPositions_IncludeOffScreenWindows")
+		this.Properties.push("WindowPositions_AutoSave")
+		this.Properties.push("WindowPositions_AutoSaveIntervalMinutes")
+		this.Properties.push("WindowPositions_AutoSaveNotify")
 		
 		this.ObsoleteProperties.push("General_RestoreDesktopIconsOnStartup")
 		this.ObsoleteProperties.push("General_RestoreWindowPositionsOnStartup")
@@ -228,6 +292,42 @@ Default_WindowPositions_IncludeOffScreenWindows := false
 		get
 		{
 			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_WindowPositions_IncludeOffScreenWindows, "boolean")
+		}
+		set
+		{
+			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	WindowPositions_AutoSave
+	{
+		get
+		{
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_WindowPositions_AutoSave, "boolean")
+		}
+		set
+		{
+			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	WindowPositions_AutoSaveIntervalMinutes
+	{
+		get
+		{
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_WindowPositions_AutoSaveIntervalMinutes, "integer")
+		}
+		set
+		{
+			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	WindowPositions_AutoSaveNotify
+	{
+		get
+		{
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_WindowPositions_AutoSaveNotify, "boolean")
 		}
 		set
 		{
