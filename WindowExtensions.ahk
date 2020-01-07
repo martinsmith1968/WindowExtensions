@@ -124,4 +124,5 @@ OnUserConfigUpdated()
 {
 	BuildWindowMenu()
 	BuildTrayMenu()
+	WindowExtensionsUserConfig_OnConfigUpdated()
 }
