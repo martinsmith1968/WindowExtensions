@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.6.4 - 2020-01-08
+
+- Added command line build command for setup exe
+
 ## v1.6.3 - 2020-01-08
 
 - Auto-Save Window Positions on a schedule
