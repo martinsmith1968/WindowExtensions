@@ -12,6 +12,8 @@ MenuLocationValues := []
 
 WindowPositions_TimerEnabled := false
 WindowPositions_TimerIntervalMinutes := 0
+DesktopIcons_TimerEnabled := false
+DesktopIcons_TimerIntervalMinutes := 0
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -27,6 +29,8 @@ WindowExtensionsUserConfig_OnInit()
 
 	global WindowPositions_TimerEnabled
 	global WindowPositions_TimerIntervalMinutes
+	global DesktopIcons_TimerEnabled
+	global DesktopIcons_TimerIntervalMinutes
 
 	MenuLocationNone := 0
 	MenuLocationWindowMenu := 1
@@ -47,6 +51,8 @@ WindowExtensionsUserConfig_OnInit()
 	
 	WindowPositions_TimerEnabled := false
 	WindowPositions_TimerIntervalMinutes := 0
+	DesktopIcons_TimerEnabled := false
+	DesktopIcons_TimerIntervalMinutes := 0
 	
 	UserConfig_OnInit()
 }
@@ -76,6 +82,7 @@ WindowExtensionsUserConfig_OnConfigUpdated()
 	global G_UserConfig
 	
 	WindowPositionsConfigureTimer(G_UserConfig.WindowPositions_AutoSave, G_UserConfig.WindowPositions_AutoSaveIntervalMinutes)
+	DesktopIconsConfigureTimer(G_UserConfig.DesktopIcons_AutoSave, G_UserConfig.DesktopIcons_AutoSaveIntervalMinutes)
 }
 
 ;--------------------------------------------------------------------------------
@@ -103,6 +110,30 @@ WindowPositionsConfigureTimer(enabled, intervalMinutes)
 }
 
 ;--------------------------------------------------------------------------------
+; DesktopIconsConfigureTimer - Configure the timer
+DesktopIconsConfigureTimer(enabled, intervalMinutes)
+{
+	global DesktopIcons_TimerEnabled
+	global DesktopIcons_TimerIntervalMinutes
+	
+	if (enabled = DesktopIcons_TimerEnabled && intervalMinutes = DesktopIcons_TimerIntervalMinutes)
+	{
+		return
+	}
+	
+	LogText("Deleting DesktopIconsAutoSave_OnTimer")
+	Try SetTimer, DesktopIconsAutoSave_OnTimer, Delete
+	
+	if (enabled)
+	{
+		milliseconds := (intervalMinutes * 60) * 1000
+		
+		LogText("Setting DesktopIconsAutoSave_OnTimer for : " . milliseconds)
+		SetTimer, DesktopIconsAutoSave_OnTimer, %milliseconds%
+	}
+}
+
+;--------------------------------------------------------------------------------
 ; WindowPositionsAutoSave_OnTimer - Timer execute
 WindowPositionsAutoSave_OnTimer()
 {
@@ -111,6 +142,17 @@ WindowPositionsAutoSave_OnTimer()
 	LogText("Executing: " . A_ThisFunc)
 	
 	SaveWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows, G_UserConfig.WindowPositions_AutoSaveNotify)
+}
+
+;--------------------------------------------------------------------------------
+; DesktopIconsAutoSave_OnTimer - Timer execute
+DesktopIconsAutoSave_OnTimer()
+{
+	global G_UserConfig
+	
+	LogText("Executing: " . A_ThisFunc)
+	
+	SaveDesktopIcons(G_UserConfig.DesktopIcons_AutoSaveNotify)
 }
 
 ;--------------------------------------------------------------------------------
@@ -130,6 +172,9 @@ Default_WindowPositions_IncludeOffScreenWindows := false
 Default_WindowPositions_AutoSave := false
 Default_WindowPositions_AutoSaveIntervalMinutes := 5
 Default_WindowPositions_AutoSaveNotify := false
+Default_DesktopIcons_AutoSave := false
+Default_DesktopIcons_AutoSaveIntervalMinutes := 5
+Default_DesktopIcons_AutoSaveNotify := false
 
 	InitDefaults()
 	{
@@ -164,6 +209,9 @@ Default_WindowPositions_AutoSaveNotify := false
 		this.Properties.push("WindowPositions_AutoSave")
 		this.Properties.push("WindowPositions_AutoSaveIntervalMinutes")
 		this.Properties.push("WindowPositions_AutoSaveNotify")
+		this.Properties.push("DesktopIcons_AutoSave")
+		this.Properties.push("DesktopIcons_AutoSaveIntervalMinutes")
+		this.Properties.push("DesktopIcons_AutoSaveNotify")
 		
 		this.ObsoleteProperties.push("General_RestoreDesktopIconsOnStartup")
 		this.ObsoleteProperties.push("General_RestoreWindowPositionsOnStartup")
@@ -334,4 +382,40 @@ Default_WindowPositions_AutoSaveNotify := false
 			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), value)
 		}
 	}
-} 
+	
+	DesktopIcons_AutoSave
+	{
+		get
+		{
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_DesktopIcons_AutoSave, "boolean")
+		}
+		set
+		{
+			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	DesktopIcons_AutoSaveIntervalMinutes
+	{
+		get
+		{
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_DesktopIcons_AutoSaveIntervalMinutes, "integer")
+		}
+		set
+		{
+			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+	
+	DesktopIcons_AutoSaveNotify
+	{
+		get
+		{
+			return base.GetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), this.Default_DesktopIcons_AutoSaveNotify, "boolean")
+		}
+		set
+		{
+			base.SetValue(base.GetSectionNameFromFunc(A_ThisFunc), base.GetPropertyNameFromFunc(A_ThisFunc), value)
+		}
+	}
+}

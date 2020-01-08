@@ -21,7 +21,12 @@ windowPositions_AutoSaveIntervalLabel := ""
 windowPositions_AutoSaveIntervalEdit := 5
 windowPositions_AutoSaveIntervalMinutes := 5
 windowPositions_AutoSaveNotify := false
-desktopIcons_NumberOfFilesToKeep := 20
+desktopIcons_AutoSave := false
+desktopIcons_AutoSaveIntervalLabel := ""
+desktopIcons_AutoSaveIntervalEdit := 5
+desktopIcons_AutoSaveIntervalMinutes := 5
+desktopIcons_AutoSaveNotify := false
+;desktopIcons_NumberOfFilesToKeep := 20
 
 ;--------------------------------------------------------------------------------
 ; LoadConfigGuiValues - Populate gui variables with values from User Config
@@ -85,6 +90,10 @@ SaveConfigGuiValues(userConfig)
 	global windowPositions_AutoSaveIntervalLabel
 	global windowPositions_AutoSaveIntervalMinutes
 	global windowPositions_AutoSaveNotify
+	global desktopIcons_AutoSave
+	global desktopIcons_AutoSaveIntervalLabel
+	global desktopIcons_AutoSaveIntervalMinutes
+	global desktopIcons_AutoSaveNotify
 	
 	global MenuLocationValues
 
@@ -103,6 +112,9 @@ SaveConfigGuiValues(userConfig)
 	userConfig.WindowPositions_AutoSaveIntervalMinutes := windowPositions_AutoSaveIntervalMinutes
 	userConfig.WindowPositions_AutoSaveNotify          := windowPositions_AutoSaveNotify
 	userConfig.WindowPositions_IncludeOffScreenWindows := windowPositions_IncludeOffScreenWindows
+	userConfig.DesktopIcons_AutoSave                   := desktopIcons_AutoSave
+	userConfig.DesktopIcons_AutoSaveIntervalMinutes    := desktopIcons_AutoSaveIntervalMinutes
+	userConfig.DesktopIcons_AutoSaveNotify             := desktopIcons_AutoSaveNotify
 	
 	userConfig.Save()
 	
@@ -132,6 +144,11 @@ BuildConfigGui()
 	global windowPositions_AutoSaveIntervalEdit
 	global windowPositions_AutoSaveIntervalMinutes
 	global windowPositions_AutoSaveNotify
+	global desktopIcons_AutoSave
+	global desktopIcons_AutoSaveIntervalLabel
+	global desktopIcons_AutoSaveIntervalEdit
+	global desktopIcons_AutoSaveIntervalMinutes
+	global desktopIcons_AutoSaveNotify
 
 	menuLocationItemsText := JoinItems("|", MenuLocationItems)
 
@@ -158,8 +175,7 @@ BuildConfigGui()
 	; Start Gui
 	Gui, Config:New, -SysMenu, %AppName% Configuration
 	Gui, Config:Margin, %marginSize%, %marginSize%
-	;Gui, Config:Add, Tab3, -Wrap w370 h230, General|Startup|Menu Control|Window Positions|Desktop Icons
-	Gui, Config:Add, Tab3, -Wrap w370 h230, General|Startup|Menu Control|Window Positions
+	Gui, Config:Add, Tab3, -Wrap w370 h230, General|Startup|Menu Control|Window Positions|Desktop Icons
 	
 	; Tab 1 - General
 	Gui, Config:Tab, 1
@@ -204,12 +220,18 @@ BuildConfigGui()
 	Gui, Config:Add, Edit, w80 x%col2% y%row2% vwindowPositions_AutoSaveIntervalEdit
 	Gui, Config:Add, UpDown, vwindowPositions_AutoSaveIntervalMinutes Range1-360, %windowPositions_AutoSaveIntervalMinutes%
 	Gui, Config:Add, Checkbox, x%col1Indent% y%row3% vwindowPositions_AutoSaveNotify Checked%windowPositions_AutoSaveNotify%, Notify when Auto-Saving ?
-	; Row 2
+	; Row 4
 	Gui, Config:Add, Checkbox, x%col1% y%row4t% vwindowPositions_IncludeOffScreenWindows Checked%windowPositions_IncludeOffScreenWindows%, Include Off-Screen Windows
 
 	; Tab 5 - Desktop Icons
-	;Gui, Config:Tab, 5
+	Gui, Config:Tab, 5
 	; Row 1
+	Gui, Config:Add, Checkbox, x%col1% y%row1t% vdesktopIcons_AutoSave gdesktopIcons_AutoSave_Checked Checked%desktopIcons_AutoSave%, Auto-Save Desktop Icons ?
+	Gui, Config:Add, Text, x%col1Indent% y%row2t% vdesktopIcons_AutoSaveIntervalLabel, Auto-Save interval (minutes)
+	Gui, Config:Add, Edit, w80 x%col2% y%row2% vdesktopIcons_AutoSaveIntervalEdit
+	Gui, Config:Add, UpDown, vdesktopIcons_AutoSaveIntervalMinutes Range1-360, %desktopIcons_AutoSaveIntervalMinutes%
+	Gui, Config:Add, Checkbox, x%col1Indent% y%row3% vdesktopIcons_AutoSaveNotify Checked%desktopIcons_AutoSaveNotify%, Notify when Auto-Saving ?
+	; Row 4
 	;Gui, Config:Add, Text, x%col1% y%row1t%, Number of saved files to &keep :
 	;Gui, Config:Add, Edit, w80 x%col2% y%row1%
 	;Gui, Config:Add, UpDown, vdesktopIcons_NumberOfFilesToKeep Range0-100, %desktopIcons_NumberOfFilesToKeep%
@@ -222,6 +244,7 @@ BuildConfigGui()
 	;--------------------------------------------------------------------------------
 	; Fire Events to ensure control consistency
 	windowPositions_AutoSave_Checked()
+	desktopIcons_AutoSave_Checked()
 }
 
 ;--------------------------------------------------------------------------------
@@ -235,6 +258,19 @@ windowPositions_AutoSave_Checked()
 	GuiControl, Enable%enabled%, windowPositions_AutoSaveIntervalEdit
 	GuiControl, Enable%enabled%, windowPositions_AutoSaveIntervalMinutes
 	GuiControl, Enable%enabled%, windowPositions_AutoSaveNotify
+}
+
+;--------------------------------------------------------------------------------
+; desktopIcons_AutoSave_Checked - When Auto-Save is checked
+desktopIcons_AutoSave_Checked()
+{
+	GuiControlGet, desktopIcons_AutoSave
+	enabled := desktopIcons_AutoSave ? 1 : 0
+	
+	GuiControl, Enable%enabled%, desktopIcons_AutoSaveIntervalLabel
+	GuiControl, Enable%enabled%, desktopIcons_AutoSaveIntervalEdit
+	GuiControl, Enable%enabled%, desktopIcons_AutoSaveIntervalMinutes
+	GuiControl, Enable%enabled%, desktopIcons_AutoSaveNotify
 }
 
 ;--------------------------------------------------------------------------------
