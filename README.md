@@ -27,6 +27,8 @@ A Configuration dialog, available from the tray icon, allows controlling some as
 
 ![Configuration Dialog Tab 4](Docs/ConfigurationDialog4.png)
 
+![Configuration Dialog Tab 5](Docs/ConfigurationDialog5.png)
+
 ## Features
 
 ### Optimum Positioning
