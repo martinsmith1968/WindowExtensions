@@ -110,7 +110,7 @@ HasWindowMoved(window1, window2)
 
 ;--------------------------------------------------------------------------------
 ; SaveWindowPositions - Save all the current window positions to a file
-SaveWindowPositions(includeOffScreenWindows)
+SaveWindowPositions(includeOffScreenWindows, notify)
 {
     desktopSize := GetDesktopSize()
     
@@ -174,13 +174,16 @@ SaveWindowPositions(includeOffScreenWindows)
     
     LogText("WindowPositions: " . saveCount . " windows written to " . fileName)
     
-    notifyText := "No Window Positions saved"
-    If saveCount > 0
+    if (notify)
     {
-		notifyText := saveCount . " Window Positions saved"
-    }
+        notifyText := "No Window Positions saved"
+        If saveCount > 0
+        {
+            notifyText := saveCount . " Window Positions saved"
+        }
 
-    new PleasantNotify("Window Positions", notifyText, 250, 100, "b r")
+        new PleasantNotify("Window Positions", notifyText, 250, 100, "b r")
+    }
 }
 
 ;--------------------------------------------------------------------------------

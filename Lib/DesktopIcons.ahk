@@ -155,7 +155,7 @@ HasIconMoved(icon1, icon2)
 }
 
 ;--------------------------------------------------------------------------------
-SaveDesktopIcons()
+SaveDesktopIcons(notify)
 {
 	desktop := new Desktop()
 	if (!desktop.IsValid)
@@ -186,13 +186,16 @@ SaveDesktopIcons()
     
     LogText("DesktopIcons: " . saveCount . " icons written to " . fileName)
     
-	notifyText := "No Desktop Icons saved"
-    If saveCount > 0
-    {
-		notifyText := saveCount . " Desktop Icons saved"
+	if (notify)
+	{
+		notifyText := "No Desktop Icons saved"
+		If saveCount > 0
+		{
+			notifyText := saveCount . " Desktop Icons saved"
+		}
+		
+		new PleasantNotify("Desktop Icons", notifyText, 250, 100, "b r")
 	}
-	
-	new PleasantNotify("Desktop Icons", notifyText, 250, 100, "b r")
 }
 
 ;--------------------------------------------------------------------------------
