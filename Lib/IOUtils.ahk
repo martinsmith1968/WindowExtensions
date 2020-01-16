@@ -1,4 +1,5 @@
 #include Lib\StringUtils.ahk
+#include Lib\HashingFunctions.ahk
 
 ;--------------------------------------------------------------------------------
 ; CombinePaths - Append path2 to path1, ensuring the correct delimiters are in place
@@ -9,11 +10,11 @@ CombinePaths(path1, path2)
 
 ;--------------------------------------------------------------------------------
 ; CombinePaths - Append multiple paths together, ensuring the correct delimiters are in place
-CombinePathA(paths*)
+CombineAllPaths(paths*)
 {
     newPath := 
 
-    Loop, %path%
+    For index, path in paths
     {
         if (newPath = "")
         {
@@ -26,6 +27,19 @@ CombinePathA(paths*)
     }
 
     return newPath
+}
+
+;--------------------------------------------------------------------------------
+; SetFileExtension - Set the extension on a filename
+SetFileExtension(fileName, extension)
+{
+    pos := InStr(fileName, ".", false, -1)
+    if (pos)
+        fileName := SubStr(fileName, 1, pos)
+    
+    fileName := EnsureEndsWith(fileName, ".") . extension
+    
+    return fileName
 }
 
 ;--------------------------------------------------------------------------------
@@ -48,4 +62,27 @@ FolderExists(folderName)
     exists := (folderAttribute && InStr(folderAttribute, "D"))
 	
 	return exists
+}
+
+;--------------------------------------------------------------------------------
+; FileReadContent - Read the entire contents of a file into a variable
+FileReadContent(fileName)
+{
+    FileRead, content, %fileName%
+    
+    return content
+}
+
+;--------------------------------------------------------------------------------
+; FileReadContentLines - Read every line of a file into an array
+FileReadContentLines(fileName)
+{
+    lines := []
+    
+    Loop, Read, %fileName%
+    {
+        lines.push(A_LoopReadLine)
+    }
+    
+    return lines
 }

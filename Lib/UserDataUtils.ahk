@@ -1,4 +1,5 @@
 #Include Lib\Logging.ahk
+#Include Lib\ArrayUtils.ahk
 #Include Lib\StringUtils.ahk
 #Include Lib\IOUtils.ahk
 
@@ -33,4 +34,32 @@ GetUserDataFileName(dataFileName)
     fileName := CombinePaths(UserDataPath, dataFileName)
 	
 	return fileName
+}
+
+;--------------------------------------------------------------------------------
+; GetUserDataFileNames : Get a list of appropriate file names for the specified User Data
+GetUserDataFileNames(dataFilePattern, sortOrder := 0)
+{
+	global UserDataPath
+	
+    filePattern := CombinePaths(UserDataPath, dataFilePattern)
+	    
+    files := []
+    
+    Loop, Files, %filePattern%
+    {
+        files.push(A_LoopFileFullPath)
+    }
+    
+	if (sortOrder != 0)
+	{
+		files := SortArray(files)
+		
+		if (sortOrder < 0)
+		{
+			files := ReverseArray(files)
+		}
+	}
+    
+    return files
 }

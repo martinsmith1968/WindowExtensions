@@ -1,6 +1,6 @@
 ;--------------------------------------------------------------------------------
-; AutoSort - Sort array (from: https://autohotkey.com/boards/viewtopic.php?f=6&t=3790&p=20122)
-AutoSort(Arr)
+; SortArray - Sort array (from: https://autohotkey.com/boards/viewtopic.php?f=6&t=3790&p=20122)
+SortArray(Arr)
 {
     t:=Object()
 	
@@ -11,6 +11,16 @@ AutoSort(Arr)
         Arr[A_Index] := v
 	
     return Arr
+}
+
+ReverseArray(arr)
+{
+	newArr := []
+	
+	for k, v in arr
+		newArr.Insert(1, v)
+	
+	return newArr
 }
 
 ;--------------------------------------------------------------------------------
