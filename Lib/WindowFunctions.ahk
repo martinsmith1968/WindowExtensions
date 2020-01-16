@@ -106,21 +106,21 @@ SetWindowByGutter(theWindow, gutterSize)
 
 ;--------------------------------------------------------------------------------
 ; SetWindowByColumn - Set the Window position by column, including a gutter
-SetWindowByColumn(theWindow, column, maxColumns, gutterSize = 0)
+SetWindowByColumn(theWindow, column, maxColumns, gutterSize := 0)
 {
 	SetWindowByGrid(theWindow, 1, column, 1, maxColumns, gutterSize)
 }
 
 ;--------------------------------------------------------------------------------
 ; SetWindowByRow - Set the Window position by row, including a gutter
-SetWindowByRow(theWindow, row, maxRows, gutterSize = 0)
+SetWindowByRow(theWindow, row, maxRows, gutterSize := 0)
 {
 	SetWindowByGrid(theWindow, row, 1, maxRows, 1, gutterSize)
 }
 
 ;--------------------------------------------------------------------------------
 ; SetWindowByGutter - Set the Window position by column, including a gutter
-SetWindowByGrid(theWindow, row, column, maxRows, maxColumns, gutterSize = 0)
+SetWindowByGrid(theWindow, row, column, maxRows, maxColumns, gutterSize := 0)
 {
 	LogText("Row: " . row . " / " . maxRows . ", Column: " . column . " / " . maxColumns . ", gutterSize: " . gutterSize)
 	
@@ -138,7 +138,7 @@ SetWindowByGrid(theWindow, row, column, maxRows, maxColumns, gutterSize = 0)
 
 ;--------------------------------------------------------------------------------
 ; SetWindowByGutter - Set the Window position by column, including a gutter
-SetWindowSpanMonitors(theWindow, alignLeft, alignTop, alignRight, alignBottom, gutterSize = 0)
+SetWindowSpanMonitors(theWindow, alignLeft, alignTop, alignRight, alignBottom, gutterSize := 0)
 {
 	windowSpan := new Rectangle2(alignLeft, alignTop, alignRight, alignBottom)
 	
@@ -335,7 +335,7 @@ SendWindowToBack(theWindow)
 
 ;--------------------------------------------------------------------------------
 ; GetMonitorIndexAt - Get the index of the monitor containing the specified x and y co-ordinates. 
-GetMonitorIndexAt(x, y, defaultMonitor = -1) 
+GetMonitorIndexAt(x, y, defaultMonitor := -1) 
 {
 	coordinate := new Coordinate(x, y)
 	;LogText("GetMonitorIndexAt: " . coordinate.Description)
@@ -375,4 +375,22 @@ FindCurrentWindowForProcessName(processName)
     }
     
     return
+}
+
+;--------------------------------------------------------------------------------
+; HasWindowMoved - Check two window positions are equivalent
+HasWindowMoved(window1, window2)
+{
+    if (window1.Left <> window2.Left)
+        return True
+    if (window1.Top <> window2.Top)
+        return True
+    if (window1.Width <> window2.Width)
+        return True
+    if (window1.Height <> window2.Height)
+        return True
+    if (window1.WindowStatus <> window2.WindowStatus)
+        return True
+    
+    return False
 }
