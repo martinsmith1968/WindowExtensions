@@ -7,12 +7,14 @@
 #Include Lib\WindowFunctions.ahk
 #Include Lib\WindowPositions.ahk
 #Include Lib\DesktopIcons.ahk
+#Include Lib\ListViewSelector.ahk
 #Include WindowExtensionsUserConfig.ahk
 
 ;--------------------------------------------------------------------------------
 ; Globals
 IconLibrary := []
 WindowMenuName :=
+G_SelectableWindowPositions := []
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -95,6 +97,13 @@ BuildWindowMenu()
 
 		restoreEnabled := HasSavedWindowPositionFile(desktopSize)
 		EnableMenuItem(WindowMenuName, restoreTitle, restoreEnabled)
+
+		if (HasMultipleSavedWindowPositionFiles(desktopSize))
+		{
+			restoreTitle := "Restore Window &Positions (" . desktopSize.DimensionsText . ")..."
+			
+			menuIndex := AddMenuItemWithIcon(WindowMenuName, restoreTitle, "RestoreMultipleWindowPositionsHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_RESTORE"), menuIndex)
+		}
 	}
 
 	; Move to Corners
@@ -262,7 +271,11 @@ SaveWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows, true)
 return
 
 RestoreWindowPositionsHandler:
-RestoreWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows)
+RestoreWindowPositions(GetLatestWindowPositionsDataFileName(GetDesktopSize()), G_UserConfig.WindowPositions_IncludeOffScreenWindows)
+return
+
+RestoreMultipleWindowPositionsHandler:
+RestoreWindowPositionsFromFile(GetDesktopSize())
 return
 
 ;--------------------------------------------------------------------------------
