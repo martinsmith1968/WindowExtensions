@@ -55,6 +55,13 @@ BuildTrayMenu()
 
 		restoreEnabled := HasSavedWindowPositionFile(desktopSize)
 		EnableMenuItem(TrayMenuName, restoreTitle, restoreEnabled)
+
+		if (HasMultipleSavedWindowPositionFiles(desktopSize))
+		{
+			restoreTitle := "Restore Window &Positions (" . desktopSize.DimensionsText . ")..."
+			
+			menuIndex := AddMenuItemWithIcon(TrayMenuName, restoreTitle, "RestoreMultipleWindowPositionsHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_RESTORE"), menuIndex)
+		}
 	}
 
 	; Desktop Icons

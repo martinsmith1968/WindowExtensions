@@ -63,13 +63,20 @@ WindowExtensionsUserConfig_OnStartup()
 {
 	global G_UserConfig
 	
+	desktopSize := GetDesktopSize()
+	
 	if (G_UserConfig.Startup_RestoreDesktopIcons)
 	{
         RestoreDesktopIcons()
 	}
 	if (G_UserConfig.Startup_RestoreWindowPositions)
 	{
-        RestoreWindowPositions(G_UserConfig.WindowPositions_IncludeOffScreenWindows)
+		if (HasSavedWindowPositionFile(desktopSize))
+		{
+			fileName := GetLatestWindowPositionsDataFileName(desktopSize)
+			
+			RestoreWindowPositions(fileName, G_UserConfig.WindowPositions_IncludeOffScreenWindows)
+		}
 	}
 	
 	WindowExtensionsUserConfig_OnConfigUpdated()
