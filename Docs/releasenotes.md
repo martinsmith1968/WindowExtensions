@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.6.5 - 2020-01-15
+
+- Support History of Saved Window Positions
+
 ## v1.6.4 - 2020-01-08
 
 - Added command line build command for setup exe
