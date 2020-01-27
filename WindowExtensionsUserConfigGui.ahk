@@ -48,6 +48,11 @@ LoadConfigGuiValues(userConfig)
 	global windowPositions_AutoSaveIntervalEdit
 	global windowPositions_AutoSaveIntervalMinutes
 	global windowPositions_AutoSaveNotify
+	global desktopIcons_AutoSave
+	global desktopIcons_AutoSaveIntervalLabel
+	global desktopIcons_AutoSaveIntervalEdit
+	global desktopIcons_AutoSaveIntervalMinutes
+	global desktopIcons_AutoSaveNotify
 	
 	global MenuLocationValues
 	global MenuLocationItems
@@ -69,6 +74,10 @@ LoadConfigGuiValues(userConfig)
 	windowPositions_AutoSaveIntervalMinutes       := userConfig.WindowPositions_AutoSaveIntervalMinutes
 	windowPositions_AutoSaveNotify                := userConfig.WindowPositions_AutoSaveNotify
 	windowPositions_IncludeOffScreenWindows       := userConfig.WindowPositions_IncludeOffScreenWindows ? 1 : 0
+	desktopIcons_AutoSave                         := userConfig.DesktopIcons_AutoSave
+	desktopIcons_AutoSaveIntervalMinutes          := userConfig.DesktopIcons_AutoSaveIntervalMinutes
+	desktopIcons_AutoSaveNotify                   := userConfig.DesktopIcons_AutoSaveNotify
+	desktopIcons_IncludeOffScreenWindows          := userConfig.DesktopIcons_IncludeOffScreenWindows ? 1 : 0
 }
 
 ;--------------------------------------------------------------------------------
