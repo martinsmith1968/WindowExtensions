@@ -5,6 +5,7 @@
 #Include Lib\MathUtils.ahk
 #Include Lib\UserDataUtils.ahk
 #Include Lib\PleasantNotify.ahk
+#Include Lib\WindowExtensionsClasses.ahk
 
 ; Inspired by : https://autohotkey.com/board/topic/60982-deskicons-getset-desktop-icon-positions/
 
@@ -17,6 +18,7 @@ global LVM_GETITEMCOUNT := 0x00001004, LVM_GETITEMPOSITION := 0x00001010, LVM_SE
 ;--------------------------------------------------------------------------------
 ; Globals
 DesktopIconsBaseFileName := ""
+DesktopIconsFileExt := "dat"
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -26,43 +28,143 @@ DesktopIcons_OnInit()
 	global PAGE_READWRITE
 	global LVM_GETITEMCOUNT
 	global DesktopIconsBaseFileName
+    global DesktopIconsFileExt
 
 	MEM_COMMIT := 0x1000, MEM_RESERVE := 0x2000, MEM_RELEASE := 0x8000
 	PAGE_READWRITE := 0x04
 	LVM_GETITEMCOUNT := 0x00001004, LVM_GETITEMPOSITION := 0x00001010, LVM_SETITEMPOSITION := 0x0000100F, WM_SETREDRAW := 0x000B
-
-	DesktopIconsBaseFileName := "DesktopIcons"
-}
-
-;--------------------------------------------------------------------------------
-HasSavedDesktopIconsFile(desktopSize)
-{
-    fileName := GetDesktopIconsDataFileName(desktopSize)
     
-    return FileExists(fileName)
+    DesktopIconsBaseFileName := "DesktopIcons"
+    DesktopIconsFileExt := "dat"
+
+    allFiles := GetDesktopIconsDataFiles("")
+    for index, item in allFiles
+    {
+        if (!item.FileTimestamp)
+        {
+            sourceFileName := item.FullFileName
+            destFileName := item.BuildFileName()
+            
+            try FileMove, %sourceFileName%, %destFileName%, 0
+        }
+    }
 }
 
 ;--------------------------------------------------------------------------------
-GetDesktopIconsDataFileName(desktopSize)
+; DesktopIconsDataFile - 
+class DesktopIconsDataFile extends WindowExtensionsDataFile
+{
+	__New(fullFileName)
+	{
+        base.__New(fullFileName)
+    }
+    
+    IsValid()
+    {
+        global DesktopIconsBaseFileName
+        global DesktopIconsFileExt
+        
+        isValid := (this.BaseFileName && (this.BaseFileName = DesktopIconsBaseFileName)) && (this.DesktopSizeDescription) && (this.Timestamp) && (this.Extension && (this.Extension = DesktopIconsFileExt))
+        
+        return isValid
+    }
+}
+
+;--------------------------------------------------------------------------------
+; BuildDesktopIconsDataFileName - Build the filename for a DesktopIcons data file or pattern
+BuildDesktopIconsDataFileName(desktopSize, isNew := false, isPattern := false)
 {
     global DesktopIconsBaseFileName
+    global DesktopIconsFileExt
     
     dimensions := desktopSize.DimensionsText
 
-    fileName := DesktopIconsBaseFileName
+    fileNamePattern := DesktopIconsBaseFileName
     if (dimensions != "")
     {
-        fileName =  %fileName%-%dimensions%
+        fileNamePattern .= "-" . dimensions
     }
     
-    fileName = %fileName%.dat
+    if (isPattern)
+    {
+        fileNamePattern .= "*"
+    }
+    else if (isNew)
+    {
+        dateTime := A_Now
+        
+        FormatTime, fileDateTime, dateTime, yyyyMMddHHmmss
+        fileNamePattern .= "-" . fileDateTime
+    }
+    
+    fileNamePattern .= "." . DesktopIconsFileExt
+    
+    return fileNamePattern
+}
 
-    dataFileName := GetUserDataFileName(fileName)
+;--------------------------------------------------------------------------------
+; GetDesktopIconsDataFileNames - Get all the DesktopIcons data files for the desktop size
+GetDesktopIconsDataFileNames(desktopSize)
+{
+    global DesktopIconsBaseFileName
+    global DesktopIconsFileExt
+    
+    pattern := BuildDesktopIconsDataFileName(desktopSize, false, true)
+    
+    files := GetUserDataFileNames(pattern, -1)
+    
+    return files
+}
+
+;--------------------------------------------------------------------------------
+; GetDesktopIconsDataFiles - Get all the DesktopIcons instances for the desktop size
+GetDesktopIconsDataFiles(desktopSize)
+{
+    files := GetDesktopIconsDataFileNames(desktopSize)
+    
+    instances := []
+    for index, item in files
+    {
+        instance := new DesktopIconsDataFile(item)
+        instances.push(instance)
+    }
+    
+    return instances
+}
+
+;--------------------------------------------------------------------------------
+; HasSavedDesktopIconsFile - Is there a file of saved Desktop Icons
+HasSavedDesktopIconsFile(desktopSize)
+{
+    fileNames := GetDesktopIconsDataFileNames(desktopSize)
+    
+    return (fileNames.length() > 0)
+}
+
+;--------------------------------------------------------------------------------
+; HasMultipleSavedDesktopIconsFiles - Is there more than 1 file of saved Desktop Icons
+HasMultipleSavedDesktopIconsFiles(desktopSize)
+{
+    fileNames := GetDesktopIconsDataFileNames(desktopSize)
+    
+    return (fileNames.length() > 1)
+}
+
+;--------------------------------------------------------------------------------
+; GetLatestDesktopIconsDataFileName - Get the appropriate saved Window Positions filename
+GetLatestDesktopIconsDataFileName(desktopSize)
+{
+    files := GetDesktopIconsDataFileNames(desktopSize)
+    
+    dataFileName := files.length() > 0
+        ? files[1]
+        : ""
 
     return dataFileName
 }
 
 ;--------------------------------------------------------------------------------
+; BuildWindowFromDefinition - Build a Desktop Icon Definition from a text string
 BuildDesktopIconFromDefinition(text, separator = "|")
 {
     parts := StrSplit(text, separator)
@@ -74,6 +176,7 @@ BuildDesktopIconFromDefinition(text, separator = "|")
 }
 
 ;--------------------------------------------------------------------------------
+; GetIconPositionDefinition - Create a text representation of a Desktop Icon
 GetIconPositionDefinition(iconPosition, separator = "|")
 {
     parts := []
@@ -155,6 +258,7 @@ HasIconMoved(icon1, icon2)
 }
 
 ;--------------------------------------------------------------------------------
+; SaveDesktopIcons - Save all the current desktop icons to a file
 SaveDesktopIcons(notify)
 {
 	desktop := new Desktop()
@@ -163,13 +267,7 @@ SaveDesktopIcons(notify)
 	
 	desktopSize := GetDesktopSize()
 	
-    fileName := GetDesktopIconsDataFileName(desktopSize)
-    
-    If (FileExists(fileName))
-    {
-        LogText("Removing old Data File: " . fileName)
-        FileDelete , %fileName%
-    }
+    fileName := GetUserDataFileName(BuildWindowPositionsDataFileName(desktopSize, true))
 	
 	iconPositions := GetDesktopIconPositions(desktop)
 	
@@ -199,22 +297,22 @@ SaveDesktopIcons(notify)
 }
 
 ;--------------------------------------------------------------------------------
-RestoreDesktopIcons()
+; RestoreDesktopIcons - Restores desktop icons from a file
+RestoreDesktopIcons(fileName)
 {
+    LogText("RestoreDesktopIcons: Using fileName: " . fileName)
+    If (!FileExists(fileName))
+    {
+        MsgBox, 48, Restore Desktop Icons, Unable to locate file %fileName%
+        return
+    }
+
 	desktop := new Desktop()
 	if (!desktop.IsValid)
 		return
 	
     desktopSize := GetDesktopSize()
     
-    fileName := GetDesktopIconsDataFileName(desktopSize)
-    
-    If (!FileExists(fileName))
-    {
-        MsgBox , 48, Restore Desktop Icons, Unable to locate file %fileName%
-        return
-    }
-
     ; Read the file into an array
     savedIcons := []
     Loop, Read, %fileName%
@@ -275,4 +373,51 @@ RestoreDesktopIcons()
     LogText("DesktopIcons: " . JoinItems(", ", textParts))
 	
 	new PleasantNotify("Desktop Icons", JoinItems("`r`n", textParts), 300, 125, "b r")
+}
+
+;--------------------------------------------------------------------------------
+; RestoreDesktopIconsFromFile - Show the dialog to select the file to restore desktop icons from
+RestoreDesktopIconsFromFile(desktopSize)
+{
+	global G_SelectableDesktopIcons
+	
+	columns := [ "Desktop Resolution", "Date Created", "Hash", "Icon Count" ]
+	columnOptions := [ "AutoHdr NoSort", "Auto NoSort", "Auto NoSort Right", "AutoHdr Integer NoSort" ]
+
+	G_SelectableDesktopIcons := GetDesktopIconsDataFiles(desktopSize)
+
+	items := []
+	for index, item in G_SelectableDesktopIcons
+	{
+		itemTimestamp := item.Timestamp
+		FormatTime, timestamp, %itemTimestamp%, yyyy-MM-dd HH:mm.ss
+		row := [ item.DesktopSizeDescription, timestamp, item.Adler32, item.LineCount ]
+		items.push(row)
+	}
+
+	selector := new ListViewSelector()
+	selector.Title := "Restore Window Positions..."
+	selector.ColumnNames := columns
+	selector.ColumnOptions := columnOptions
+	selector.Items := items
+	selector.ListViewWidth := 400
+	selector.MinRowCountSize := 6
+	selector.SelectedIndex := 1
+	selector.OnSuccess := "OnDesktopIconsSelected"
+
+	selector.ShowDialog()
+}
+
+;--------------------------------------------------------------------------------
+; OnDesktopIconsSelected - Restore selected Window Positions
+OnDesktopIconsSelected(listViewSelector)
+{
+	global G_SelectableDesktopIcons
+	
+	item := G_SelectableDesktopIcons[listViewSelector.SelectedIndex]
+	
+	if (!item)
+		return
+	
+	RestoreDesktopIcons(item.FullFileName)
 }

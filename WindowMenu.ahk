@@ -15,6 +15,7 @@
 IconLibrary := []
 WindowMenuName :=
 G_SelectableWindowPositions := []
+G_SelectableDesktopIcons := []
 
 ;--------------------------------------------------------------------------------
 ; Initialisation
@@ -92,13 +93,13 @@ BuildWindowMenu()
 		saveTitle := "Save Window &Positions (" . desktopSize.DimensionsText . ")"
 		menuIndex := AddMenuItemWithIcon(WindowMenuName, saveTitle, "SaveWindowPositionsHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_SAVE"), menuIndex)
 
-		restoreTitle := "Restore Window &Positions (" . desktopSize.DimensionsText . ")"
+		restoreTitle := "Restore Last Window &Positions (" . desktopSize.DimensionsText . ")"
 		menuIndex := AddMenuItemWithIcon(WindowMenuName, restoreTitle, "RestoreWindowPositionsHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_RESTORE"), menuIndex)
 
-		restoreEnabled := HasSavedWindowPositionFile(desktopSize)
+		restoreEnabled := HasSavedWindowPositionsFile(desktopSize)
 		EnableMenuItem(WindowMenuName, restoreTitle, restoreEnabled)
 
-		if (HasMultipleSavedWindowPositionFiles(desktopSize))
+		if (HasMultipleSavedWindowPositionsFiles(desktopSize))
 		{
 			restoreTitle := "Restore Window &Positions (" . desktopSize.DimensionsText . ")..."
 			
@@ -148,6 +149,13 @@ BuildWindowMenu()
 
 		restoreEnabled := HasSavedDesktopIconsFile(desktopSize)
 		EnableMenuItem(WindowMenuName, restoreTitle, restoreEnabled)
+
+		if (HasMultipleSavedDesktopIconsFiles(desktopSize))
+		{
+			restoreTitle := "Restore &Desktop Icons (" . desktopSize.DimensionsText . ")..."
+			
+			menuIndex := AddMenuItemWithIcon(WindowMenuName, restoreTitle, "RestoreMultipleDesktopIconsHandler", IconLibraryFileName, GetIconLibraryIndex("DESKTOPICONS_RESTORE"), menuIndex)
+		}
 	}
 
 	; Cancel menu
@@ -156,7 +164,7 @@ BuildWindowMenu()
 }
 
 ;--------------------------------------------------------------------------------
-; Build Icon Library
+; BuildIconLibrary - Build Icon Library
 BuildIconLibrary()
 {
 	global IconLibrary
@@ -340,7 +348,11 @@ SaveDesktopIcons(true)
 return
 
 RestoreDesktopIconsHandler:
-RestoreDesktopIcons()
+RestoreDesktopIcons(GetLatestWindowPositionsDataFileName(GetDesktopSize()))
+return
+
+RestoreMultipleDesktopIconsHandler:
+RestoreDesktopIconsFromFile(GetDesktopSize())
 return
 
 ;--------------------------------------------------------------------------------

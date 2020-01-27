@@ -9,6 +9,7 @@
 #Include Lib\UserDataUtils.ahk
 #Include Lib\HashingFunctions.ahk
 #Include Lib\PleasantNotify.ahk
+#Include Lib\WindowExtensionsClasses.ahk
 
 ;--------------------------------------------------------------------------------
 ; Globals
@@ -40,80 +41,11 @@ WindowPositions_OnInit()
 
 ;--------------------------------------------------------------------------------
 ; WindowPositionsDataFile - 
-class WindowPositionsDataFile extends DataFile
+class WindowPositionsDataFile extends WindowExtensionsDataFile
 {
 	__New(fullFileName)
 	{
         base.__New(fullFileName)
-    }
-    
-    BaseFileName
-    {
-        get
-        {
-            return StrSplit(this.FileNameNoExt, "-")[1]
-        }
-    }
-    
-    DesktopSizeDescription
-    {
-        get
-        {
-            return StrSplit(this.FileNameNoExt, "-")[2]
-        }
-    }
-    
-    DesktopSizeWidth
-    {
-        get
-        {
-            return StrSplit(this.DesktopSizeDescription, "x")[1]
-        }
-    }
-    
-    DesktopSizeHeight
-    {
-        get
-        {
-            return StrSplit(this.DesktopSizeDescription, "x")[2]
-        }
-    }
-    
-    FileTimestamp
-    {
-        get
-        {
-            return StrSplit(this.FileNameNoExt, "-")[3]
-        }
-    }
-    
-    FileCreatedTimestamp
-    {
-        get
-        {
-            fileName := this.FullFileName
-            
-            FileGetTime, timestamp, %fileName%, C
-            
-            return timestamp
-        }
-    }
-    
-    Timestamp
-    {
-        get
-        {
-            return this.FileTimestamp ? this.FileTimestamp : this.FileCreatedTimestamp
-        }
-    }
-    
-    BuildFileName()
-    {
-        fileNameOnly := JoinText("-", this.BaseFileName, this.DesktopSizeDescription, this.Timestamp)
-        
-        fileName := CombinePaths(this.Directory, SetFileExtension(fileNameOnly, this.Extension))
-        
-        return fileName
     }
     
     IsValid()
@@ -190,8 +122,8 @@ GetWindowPositionsDataFiles(desktopSize)
 }
 
 ;--------------------------------------------------------------------------------
-; HasSavedWindowPositionFile - Is there a file of saved Window Positions
-HasSavedWindowPositionFile(desktopSize)
+; HasSavedWindowPositionsFile - Is there a file of saved Window Positions
+HasSavedWindowPositionsFile(desktopSize)
 {
     fileNames := GetWindowPositionsDataFileNames(desktopSize)
     
@@ -199,8 +131,8 @@ HasSavedWindowPositionFile(desktopSize)
 }
 
 ;--------------------------------------------------------------------------------
-; HasMultipleSavedWindowPositionFiles - Is there more than 1 file of saved Window Positions
-HasMultipleSavedWindowPositionFiles(desktopSize)
+; HasMultipleSavedWindowPositionsFiles - Is there more than 1 file of saved Window Positions
+HasMultipleSavedWindowPositionsFiles(desktopSize)
 {
     fileNames := GetWindowPositionsDataFileNames(desktopSize)
     
@@ -434,14 +366,14 @@ RestoreWindowPositionsFromFile(desktopSize)
 	selector.ListViewWidth := 400
 	selector.MinRowCountSize := 6
 	selector.SelectedIndex := 1
-	selector.OnSuccess := "OnWindowPositionSelected"
+	selector.OnSuccess := "OnWindowPositionsSelected"
 
 	selector.ShowDialog()
 }
 
 ;--------------------------------------------------------------------------------
 ; OnWindowPositionSelected - Restore selected Window Positions
-OnWindowPositionSelected(listViewSelector)
+OnWindowPositionsSelected(listViewSelector)
 {
 	global G_SelectableWindowPositions
 	

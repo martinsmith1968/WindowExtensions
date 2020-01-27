@@ -1,6 +1,7 @@
 # To Do
 
-- Support History of Saved Desktop Icon Positions
+- Option(s) to control History of Saved Window Positions
+- Option(s) to control History of Saved Desktop Icons
 - Add icons to other context menu items
 
 ## Bugs
