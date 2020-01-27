@@ -53,10 +53,10 @@ BuildTrayMenu()
 		restoreTitle := "Restore Last Window &Positions (" . desktopSize.DimensionsText . ")"
 		menuIndex := AddMenuItemWithIcon(TrayMenuName, restoreTitle, "RestoreWindowPositionsHandler", IconLibraryFileName, GetIconLibraryIndex("POSITION_RESTORE"), menuIndex)
 
-		restoreEnabled := HasSavedWindowPositionFile(desktopSize)
+		restoreEnabled := HasSavedWindowPositionsFile(desktopSize)
 		EnableMenuItem(TrayMenuName, restoreTitle, restoreEnabled)
 
-		if (HasMultipleSavedWindowPositionFiles(desktopSize))
+		if (HasMultipleSavedWindowPositionsFiles(desktopSize))
 		{
 			restoreTitle := "Restore Window &Positions (" . desktopSize.DimensionsText . ")..."
 			
@@ -77,6 +77,13 @@ BuildTrayMenu()
 
 		restoreEnabled := HasSavedDesktopIconsFile(desktopSize)
 		EnableMenuItem(TrayMenuName, restoreTitle, restoreEnabled)
+
+		if (HasMultipleSavedDesktopIconsFiles(desktopSize))
+		{
+			restoreTitle := "Restore &Desktop Icons (" . desktopSize.DimensionsText . ")..."
+			
+			menuIndex := AddMenuItemWithIcon(TrayMenuName, restoreTitle, "RestoreMultipleDesktopIconsHandler", IconLibraryFileName, GetIconLibraryIndex("DESKTOPICONS_RESTORE"), menuIndex)
+		}
 	}
 
 	menuIndex := AddMenuItemSeparator(TrayMenuName, menuIndex)

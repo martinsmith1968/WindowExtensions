@@ -67,11 +67,17 @@ WindowExtensionsUserConfig_OnStartup()
 	
 	if (G_UserConfig.Startup_RestoreDesktopIcons)
 	{
-        RestoreDesktopIcons()
+		if (HasSavedDesktopIconsFile(desktopSize))
+		{
+			fileName := GetLatestDesktopIconsDataFileName(desktopSize)
+			
+			RestoreDesktopIcons(fileName)
+		}
 	}
+	
 	if (G_UserConfig.Startup_RestoreWindowPositions)
 	{
-		if (HasSavedWindowPositionFile(desktopSize))
+		if (HasSavedWindowPositionsFile(desktopSize))
 		{
 			fileName := GetLatestWindowPositionsDataFileName(desktopSize)
 			
