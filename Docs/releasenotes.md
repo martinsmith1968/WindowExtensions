@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.6.6 - 2020-01-27
+
+- Support History of Saved Desktop Icons
+
 ## v1.6.5 - 2020-01-15
 
 - Support History of Saved Window Positions
