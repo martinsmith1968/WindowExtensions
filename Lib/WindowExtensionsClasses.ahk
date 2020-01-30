@@ -4,8 +4,8 @@
 ; WindowExtensionsDataFile - 
 class WindowExtensionsDataFile extends DataFile
 {
-	__New(fullFileName)
-	{
+    __New(fullFileName)
+    {
         base.__New(fullFileName)
     }
     
