@@ -265,16 +265,31 @@ SaveWindowPositions(includeOffScreenWindows, notify)
     }
 
     LogText("WindowPositions: " . saveCount . " windows written to " . fileName)
-    
+
+    pattern := BuildWindowPositionsDataFileName(desktopSize, false, true)
+    allDataFiles := GetUserDataFileNames(pattern, -1)
+
+    consolidatedCount := ConsolidateUserDataFilesByCRC32(allDataFiles)
+
+    LogText("WindowPositions: Consolidated - " . consolidatedCount . " files removed")
+
     if (notify)
     {
+        notifyHeight := 100
         notifyText := "No Window Positions saved"
+        
         If saveCount > 0
         {
             notifyText := saveCount . " Window Positions saved"
         }
+        
+        if (consolidatedCount > 0)
+        {
+            notifyText .= "`r`n" . consolidatedCount . " files Consolidated"
+            notifyHeight += 25
+        }
 
-        new PleasantNotify("Window Positions", notifyText, 250, 100, "b r")
+        new PleasantNotify("Window Positions", notifyText, 250, notifyHeight, "b r")
     }
 }
 

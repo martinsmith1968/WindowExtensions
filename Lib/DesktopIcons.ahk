@@ -282,15 +282,30 @@ SaveDesktopIcons(notify)
     
     LogText("DesktopIcons: " . saveCount . " icons written to " . fileName)
     
+    pattern := BuildDesktopIconsDataFileName(desktopSize, false, true)
+    allDataFiles := GetUserDataFileNames(pattern, -1)
+
+    consolidatedCount := ConsolidateUserDataFilesByCRC32(allDataFiles)
+
+    LogText("DesktopIcons: Consolidated - " . consolidatedCount . " files removed")
+
     if (notify)
     {
+        notifyHeight := 100
         notifyText := "No Desktop Icons saved"
+        
         If saveCount > 0
         {
             notifyText := saveCount . " Desktop Icons saved"
         }
         
-        new PleasantNotify("Desktop Icons", notifyText, 250, 100, "b r")
+        if (consolidatedCount > 0)
+        {
+            notifyText .= "`r`n" . consolidatedCount . " files Consolidated"
+            notifyHeight += 25
+        }
+        
+        new PleasantNotify("Desktop Icons", notifyText, 250, notifyHeight, "b r")
     }
 }
 
