@@ -43,8 +43,8 @@ WindowPositions_OnInit()
 ; WindowPositionsDataFile - 
 class WindowPositionsDataFile extends WindowExtensionsDataFile
 {
-	__New(fullFileName)
-	{
+    __New(fullFileName)
+    {
         base.__New(fullFileName)
     }
     
@@ -192,14 +192,10 @@ GetWindowDefinition(window, separator := "|")
 }    
 
 ;--------------------------------------------------------------------------------
-; SaveWindowPositions - Save all the current window positions to a file
-SaveWindowPositions(includeOffScreenWindows, notify)
+GetWindowPositions(includeOffScreenWindows)
 {
-    desktopSize := GetDesktopSize()
+    positions := []
     
-    fileName := GetUserDataFileName(BuildWindowPositionsDataFileName(desktopSize, true))
-
-    saveCount := 0
     WinGet windows, List
 
     Loop %windows%
@@ -242,24 +238,58 @@ SaveWindowPositions(includeOffScreenWindows, notify)
 
         if (window.Title && window.IsValid && isVisible)
         {
-            saveCount += 1
-            data := GetWindowDefinition(window)
-            LogText("Saving: " . data)
-            FileAppend , % data . "`r`n", %fileName%
+            positions.push(window)
         }
     }
     
-    LogText("WindowPositions: " . saveCount . " windows written to " . fileName)
+    return positions
+}
+
+;--------------------------------------------------------------------------------
+; SaveWindowPositions - Save all the current window positions to a file
+SaveWindowPositions(includeOffScreenWindows, notify)
+{
+    desktopSize := GetDesktopSize()
     
+    windowPositions := GetWindowPositions(includeOffScreenWindows)
+    
+    fileName := GetUserDataFileName(BuildWindowPositionsDataFileName(desktopSize, true))
+
+    saveCount := 0
+    for i, windowPosition in windowPositions
+    {
+        data := GetWindowDefinition(windowPosition)
+    
+        FileAppend , % data . "`r`n", %fileName%
+        saveCount += 1
+    }
+
+    LogText("WindowPositions: " . saveCount . " windows written to " . fileName)
+
+    pattern := BuildWindowPositionsDataFileName(desktopSize, false, true)
+    allDataFiles := GetUserDataFileNames(pattern, -1)
+
+    consolidatedCount := ConsolidateUserDataFilesByCRC32(allDataFiles)
+
+    LogText("WindowPositions: Consolidated - " . consolidatedCount . " files removed")
+
     if (notify)
     {
+        notifyHeight := 100
         notifyText := "No Window Positions saved"
+        
         If saveCount > 0
         {
             notifyText := saveCount . " Window Positions saved"
         }
+        
+        if (consolidatedCount > 0)
+        {
+            notifyText .= "`r`n" . consolidatedCount . " files Consolidated"
+            notifyHeight += 25
+        }
 
-        new PleasantNotify("Window Positions", notifyText, 250, 100, "b r")
+        new PleasantNotify("Window Positions", notifyText, 250, notifyHeight, "b r")
     }
 }
 
@@ -329,9 +359,9 @@ RestoreWindowPositions(fileName, includeOffScreenWindows)
         restoreCount += 1
     }
     
-	textParts := []
-	textParts.push(restoreCount . " windows restored")
-	textParts.push(moveCount . " windows moved")
+    textParts := []
+    textParts.push(restoreCount . " windows restored")
+    textParts.push(moveCount . " windows moved")
     
     LogText("WindowPositions: " . JoinItems(", ", textParts))
 
@@ -342,45 +372,45 @@ RestoreWindowPositions(fileName, includeOffScreenWindows)
 ; RestoreWindowPositionsFromFile - Show the dialog to select the file to restore window positions from
 RestoreWindowPositionsFromFile(desktopSize)
 {
-	global G_SelectableWindowPositions
-	
-	columns := [ "Desktop Resolution", "Date Created", "Hash", "Window Count" ]
-	columnOptions := [ "AutoHdr NoSort", "Auto NoSort", "Auto NoSort Right", "AutoHdr Integer NoSort" ]
+    global G_SelectableWindowPositions
+    
+    columns := [ "Desktop Resolution", "Date Created", "Hash", "Window Count" ]
+    columnOptions := [ "AutoHdr NoSort", "Auto NoSort", "Auto NoSort Right", "AutoHdr Integer NoSort" ]
 
-	G_SelectableWindowPositions := GetWindowPositionsDataFiles(desktopSize)
+    G_SelectableWindowPositions := GetWindowPositionsDataFiles(desktopSize)
 
-	items := []
-	for index, item in G_SelectableWindowPositions
-	{
-		itemTimestamp := item.Timestamp
-		FormatTime, timestamp, %itemTimestamp%, yyyy-MM-dd HH:mm.ss
-		row := [ item.DesktopSizeDescription, timestamp, item.Adler32, item.LineCount ]
-		items.push(row)
-	}
+    items := []
+    for index, item in G_SelectableWindowPositions
+    {
+        itemTimestamp := item.Timestamp
+        FormatTime, timestamp, %itemTimestamp%, yyyy-MM-dd HH:mm.ss
+        row := [ item.DesktopSizeDescription, timestamp, item.Adler32, item.LineCount ]
+        items.push(row)
+    }
 
-	selector := new ListViewSelector()
-	selector.Title := "Restore Window Positions..."
-	selector.ColumnNames := columns
-	selector.ColumnOptions := columnOptions
-	selector.Items := items
-	selector.ListViewWidth := 400
-	selector.MinRowCountSize := 6
-	selector.SelectedIndex := 1
-	selector.OnSuccess := "OnWindowPositionsSelected"
+    selector := new ListViewSelector()
+    selector.Title := "Restore Window Positions..."
+    selector.ColumnNames := columns
+    selector.ColumnOptions := columnOptions
+    selector.Items := items
+    selector.ListViewWidth := 400
+    selector.MinRowCountSize := 6
+    selector.SelectedIndex := 1
+    selector.OnSuccess := "OnWindowPositionsSelected"
 
-	selector.ShowDialog()
+    selector.ShowDialog()
 }
 
 ;--------------------------------------------------------------------------------
 ; OnWindowPositionSelected - Restore selected Window Positions
 OnWindowPositionsSelected(listViewSelector)
 {
-	global G_SelectableWindowPositions
-	
-	item := G_SelectableWindowPositions[listViewSelector.SelectedIndex]
-	
-	if (!item)
-		return
-	
-	RestoreWindowPositions(item.FullFileName, G_UserConfig.WindowPositions_IncludeOffScreenWindows)
+    global G_SelectableWindowPositions
+    
+    item := G_SelectableWindowPositions[listViewSelector.SelectedIndex]
+    
+    if (!item)
+        return
+    
+    RestoreWindowPositions(item.FullFileName, G_UserConfig.WindowPositions_IncludeOffScreenWindows)
 }

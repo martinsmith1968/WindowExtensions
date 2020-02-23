@@ -49,8 +49,8 @@ FileExists(fileName)
     fileAttribute := FileExist(fileName)
     
     exists := (fileAttribute && fileAttribute != "X")
-	
-	return exists
+    
+    return exists
 }
 
 ;--------------------------------------------------------------------------------
@@ -60,8 +60,8 @@ FolderExists(folderName)
     folderAttribute := FileExist(folderName)
     
     exists := (folderAttribute && InStr(folderAttribute, "D"))
-	
-	return exists
+    
+    return exists
 }
 
 ;--------------------------------------------------------------------------------

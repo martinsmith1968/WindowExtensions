@@ -83,8 +83,8 @@ _FullFileName :=
 ; DataFile - Class to represent a data file with a well formed name
 class DataFile extends FileNameParser
 {
-	__New(fullFileName)
-	{
+    __New(fullFileName)
+    {
         base.__New(fullFileName)
     }
     

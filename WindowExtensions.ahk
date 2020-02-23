@@ -1,4 +1,4 @@
-#NoEnv  		; Recommended for performance and compatibility with future AutoHotkey releases.
+#NoEnv          ; Recommended for performance and compatibility with future AutoHotkey releases.
 #SingleInstance Force
 
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
@@ -15,7 +15,7 @@ AppDescription := "Window Extensions Menu and HotKeys"
 AppCopyright   := "Copyright © 2020 Martin Smith"
 AppNotes       := "Concise and consistent control over Window Positions. Right-click right half of Window Caption bar to invoke, or hit WinKey-W"
 AppURL         := "https://github.com/martinsmith1968/WindowExtensions"
-AppVersion     := "1.6.6.0"
+AppVersion     := "1.6.7.0"
 
 ;--------------------------------------------------------------------------------
 ; Includes
@@ -24,8 +24,8 @@ LogInit()
 
 ;--------------------------------------------------------------------------------
 ; System Information
-SysGet, G_CaptionHeight, 4 ; SM_CYCAPTION
-SysGet, G_BorderHeight, 5 ; SM_CXBORDER
+SysGet, G_CaptionHeight, 4      ; SM_CYCAPTION
+SysGet, G_BorderHeight, 5       ; SM_CXBORDER
 SysGet, G_MenuDropAlignment, 40 ; SM_MENUDROPALIGNMENT
 SysGet, G_MonitorCount, MonitorCount
 SysGet, G_PrimaryMonitorIndex, MonitorPrimary
@@ -54,11 +54,11 @@ OnExit, ExitHandler
 
 ;--------------------------------------------------------------------------------
 ; Auto-Execute section
-OnInit()		; Perform module initialisation - not reliant on other modules or globals
-InitGlobals()	; 
-OnStartup()		; Perform module startup - may rely on other modules Init
+OnInit()        ; Perform module initialisation - not reliant on other modules or globals
+InitGlobals()   ; 
+OnStartup()     ; Perform module startup - may rely on other modules Init
 
-return  ; End of script's auto-execute section.
+return          ; End of script's auto-execute section.
 
 
 ;--------------------------------------------------------------------------------
@@ -86,43 +86,43 @@ ExitApp
 ; Initialise global variables once everything else initialised
 InitGlobals()
 {
-	global G_UserConfig
-	
-	G_UserConfig := new WindowExtensionsUserConfig()
+    global G_UserConfig
+    
+    G_UserConfig := new WindowExtensionsUserConfig()
 }
 
 ;--------------------------------------------------------------------------------
 ; Module initialisation
 OnInit()
 {
-	WindowExtensionsUserConfig_OnInit()
-	WindowPositions_OnInit()
-	DesktopIcons_OnInit()
-	WindowMenu_OnInit()
-	TrayMenu_OnInit()
+    WindowExtensionsUserConfig_OnInit()
+    WindowPositions_OnInit()
+    DesktopIcons_OnInit()
+    WindowMenu_OnInit()
+    TrayMenu_OnInit()
 }
 
 ;--------------------------------------------------------------------------------
 ; OnStartup event
 OnStartup()
 {
-	WindowExtensionsUserConfig_OnStartup()
-	WindowMenu_OnStartup()
-	TrayMenu_OnStartup()
+    WindowExtensionsUserConfig_OnStartup()
+    WindowMenu_OnStartup()
+    TrayMenu_OnStartup()
 }
 
 ;--------------------------------------------------------------------------------
 ; OnExit event
 OnExit()
 {
-	WindowMenu_OnExit()
+    WindowMenu_OnExit()
 }
 
 ;--------------------------------------------------------------------------------
 ; OnUserConfigUpdated event
 OnUserConfigUpdated()
 {
-	BuildWindowMenu()
-	BuildTrayMenu()
-	WindowExtensionsUserConfig_OnConfigUpdated()
+    BuildWindowMenu()
+    BuildTrayMenu()
+    WindowExtensionsUserConfig_OnConfigUpdated()
 }
