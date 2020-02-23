@@ -1,5 +1,9 @@
 # Release Notes
 
+## v1.6.7 - 2020-02-23
+
+- Consolidate data saving
+
 ## v1.6.6 - 2020-01-27
 
 - Support History of Saved Desktop Icons
