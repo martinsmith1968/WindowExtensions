@@ -9,8 +9,9 @@ MoveAndSizeWindow(theWindow, winLeft, winTop, winWidth, winHeight)
 {
     windowHandle := theWindow.WindowHandle
     
-    LogText("Window: " . theWindow.ProcessName . " (" . windowHandle . ") Left: " . winLeft . ", Top: " . winTop . ", Width: " . winWidth . ", Height: " . winHeight)
+    LogText("MoveAndSizeWindow: Window: " . theWindow.ProcessName . " (" . windowHandle . ") Left: " . winLeft . ", Top: " . winTop . ", Width: " . winWidth . ", Height: " . winHeight)
 
+    WinRestore , ahk_id %windowHandle%
     WinMove , ahk_id %windowHandle%, , winLeft, winTop, winWidth, winHeight
     WinActivate, ahk_id %windowHandle%
     WinShow, ahk_id %windowHandle%
@@ -23,8 +24,9 @@ MoveWindow(theWindow, winLeft, winTop)
     windowHandle := theWindow.WindowHandle
     
     WinGet, theProcess, ProcessName, ahk_id %theWindow%
-    LogText("Window: " . theWindow.ProcessName . " (" . windowHandle . ") Left: " . winLeft . ", Top: " . winTop)
+    LogText("MoveWindow: Window: " . theWindow.ProcessName . " (" . windowHandle . ") Left: " . winLeft . ", Top: " . winTop)
 
+    WinRestore , ahk_id %windowHandle%
     WinMove , ahk_id %windowHandle%, , winLeft, winTop
     WinActivate, ahk_id %windowHandle%
     WinShow, ahk_id %windowHandle%
@@ -36,7 +38,7 @@ SetWindowStatus(theWindow, status)
 {
     windowHandle := theWindow.WindowHandle
     
-    LogText("Window: " . theWindow.ProcessName . " (" . windowHandle . ") Status: " . status)
+    LogText("SetWindowStatus: Window: " . theWindow.ProcessName . " (" . windowHandle . ") Status: " . status)
     If (status = 1)
     {
         WinMaximize, ahk_id %windowHandle%
@@ -91,7 +93,7 @@ SetWindowTransparency(theWindow, transparency)
 ; SetWindowByGutter - Set the Window position including a gutter
 SetWindowByGutter(theWindow, gutterSize)
 {
-    LogText("gutterSize: " . gutterSize)
+    LogText("SetWindowByGutter: gutterSize: " . gutterSize)
     
     monitor := new Monitor(theWindow.MonitorIndex)
     monitorWorkArea := monitor.WorkArea
@@ -122,7 +124,7 @@ SetWindowByRow(theWindow, row, maxRows, gutterSize := 0)
 ; SetWindowByGutter - Set the Window position by column, including a gutter
 SetWindowByGrid(theWindow, row, column, maxRows, maxColumns, gutterSize := 0)
 {
-    LogText("Row: " . row . " / " . maxRows . ", Column: " . column . " / " . maxColumns . ", gutterSize: " . gutterSize)
+    LogText("SetWindowByGrid: Row: " . row . " / " . maxRows . ", Column: " . column . " / " . maxColumns . ", gutterSize: " . gutterSize)
     
     monitor := new Monitor(theWindow.MonitorIndex)
     monitorWorkArea := monitor.WorkArea

@@ -7,15 +7,17 @@ SetFormat, float, 0.0
 SetBatchLines, 10ms 
 SetTitleMatchMode, 2
 
+; NOTE: Currently requires AutoHotkey v1.1+ - https://www.autohotkey.com/
+
 ;--------------------------------------------------------------------------------
 ; Application Details
 AppName        := "WindowExtensions"
 AppTitle       := "Window Extensions"
 AppDescription := "Window Extensions Menu and HotKeys"
-AppCopyright   := "Copyright © 2020 Martin Smith"
+AppCopyright   := "Copyright ï¿½ 2025 Martin Smith"
 AppNotes       := "Concise and consistent control over Window Positions. Right-click right half of Window Caption bar to invoke, or hit WinKey-W"
 AppURL         := "https://github.com/martinsmith1968/WindowExtensions"
-AppVersion     := "1.6.7.0"
+AppVersion     := "1.7.0.0"
 
 ;--------------------------------------------------------------------------------
 ; Includes
